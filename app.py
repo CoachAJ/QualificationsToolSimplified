@@ -107,7 +107,8 @@ if generate_button:
         try:
             # Configure the Gemini API with the user-provided key
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-pro')
+            # Update to use the correct model name for the current API version
+            model = genai.GenerativeModel(model_name='gemini-1.5-pro')
 
             # Read the uploaded CSV files into pandas DataFrames
             gvd_df = pd.read_csv(uploaded_gvd)

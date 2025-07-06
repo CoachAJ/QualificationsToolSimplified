@@ -1,6 +1,9 @@
 import streamlit as st
 import google.generativeai as genai
 import pandas as pd
+import time
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from google.api_core.exceptions import ResourceExhausted
 
 # --- Page Configuration (Sets the title and icon in the browser tab) ---
 st.set_page_config(
@@ -127,9 +130,33 @@ if generate_button:
                 f"--- TARGET RANK ---\n{target_rank}\n--- END OF TARGET RANK ---"
             )
 
-            # Make the API call
-            response = model.generate_content(full_prompt)
-
+            # Define a retry decorator for the API call
+            @retry(
+                stop=stop_after_attempt(3),  # Try 3 times maximum
+                wait=wait_exponential(multiplier=1, min=4, max=30),  # Wait between attempts with backoff
+                retry=retry_if_exception_type(ResourceExhausted),  # Only retry on rate limit errors
+                reraise=True  # Raise the last exception if all retries fail
+            )
+            def generate_with_retry(content):
+                try:
+                    return model.generate_content(content)
+                except ResourceExhausted as e:
+                    # If we hit a rate limit, tell the user and suggest waiting
+                    retry_after = 60  # Default retry after 1 minute
+                    if 'retry_delay' in str(e):
+                        # Try to extract the retry delay from error message
+                        import re
+                        match = re.search(r'retry_delay\s*{\s*seconds:\s*(\d+)', str(e))
+                        if match:
+                            retry_after = int(match.group(1))
+                    
+                    st.warning(f"Rate limit reached. Retrying in {retry_after} seconds...")
+                    time.sleep(retry_after)
+                    raise e  # Re-raise to let the retry mechanism handle it
+            
+            # Make the API call with retry logic
+            response = generate_with_retry(full_prompt)
+            
             # Store the successful response in the session state
             st.session_state.api_response = response.text
 

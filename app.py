@@ -197,8 +197,8 @@ Before you do anything, you MUST consult this knowledge base. The rules and defi
 
 **OUTPUT STEP 1: INITIAL ASSESSMENT & GAP ANALYSIS**
 1. **State the Goal:** 
-   - "Core Goal: Achieve {target_rank} for [User Name]."
-   - "Secondary Goal: Achieve the {target_rank} Car Bonus."
+   - "Core Goal: Achieve {{target_rank}} for [User Name]."
+   - "Secondary Goal: Achieve the {{target_rank}} Car Bonus."
 
 2. **User PQV Analysis:**
    - Current Total PQV: [X] (from Group Volume Details)
@@ -394,17 +394,69 @@ if generate_button:
                 st.error(f"❌ Error reading CSV files: {str(e)}. Please check the file format and try again.")
                 st.stop()
 
-            # Format the system prompt with the target rank
-            system_prompt = SYSTEM_PROMPT.format(
-                target_rank=target_rank,
-                COMPENSATION_PLAN_TEXT=COMPENSATION_PLAN_TEXT,
-                GLOSSARY_TEXT=GLOSSARY_TEXT,
-                POLICIES_TEXT=POLICIES_TEXT
+            # Format the system prompt with the target rank and other components
+            system_prompt = (
+                f"{COMPENSATION_PLAN_TEXT}\n\n"
+                f"{GLOSSARY_TEXT}\n\n"
+                f"{POLICIES_TEXT}\n"
             )
             
             # Create the full prompt with the data
             full_prompt = (
-                f"{system_prompt}\n\n"
+                f"{system_prompt}\n"
+                "### CORE DEFINITIONS & UNBREAKABLE RULES\n"
+                "1. **DATA UNIFICATION RULE (CRITICAL FIRST STEP):** Before any analysis, you MUST mentally join the two data sources. The 'ID#' column in 'AdvancedGenealogyReport.csv' corresponds to the 'Associate #' column in 'Group Volume Details.csv'.\n\n"
+                "2. **DISTRIBUTOR CLASSIFICATION:** After unifying the data, classify each person:\n   - If 'Title' is 'PCUST' → CUSTOMER (cannot be a leg)\n   - If 'Title' is anything else (SAA, SRA, 1SE, BRA, DIST, etc.) → DISTRIBUTOR (can be a leg)\n\n"
+                "3. **PRINCIPLE OF MINIMUM SUFFICIENT ACTION:** Use the smallest amount of resources necessary to meet requirements. Once a distributor or leg is qualified, STOP allocating resources to them.\n\n"
+                "4. **VOLUME SOURCE:** All volume data comes from the 'Volume' column in 'Group Volume Details.csv'.\n\n"
+                "### BUSINESS RESOURCES\n"
+                "1. **Volume Bank:** Non-autoship orders from frontline PCUSTs or Distributor volume over and above the required threshold found in additional orders in the same period\n"
+                "2. **Movable Accounts:** PCUST accounts enrolled within last 60 days\n"
+                "3. **User's Surplus Volume:** User's excess volume above rank requirements\n"
+                "4. **Volume Pull-Up:** Move volume from frontline members to user if needed\n\n"
+                "### RANK REQUIREMENTS (CRITICAL - MUST FOLLOW EXACTLY)\n"
+                "* **1 Star Executive (1SE):** 250 PQV + 3 Qualified Legs + 5,400 total Group Volume\n"
+                "* **2 Star Executive (2SE):** 300 PQV + 3 Individual 1 Star Legs + 7,500 total Group Volume\n"
+                "* **3 Star Executive (3SE):** 300 PQV + 5 Individual 1 Star Legs + 10,500 total Group Volume\n"
+                "* **4 Star Executive (4SE):** 300 PQV + 6 Individual 1 Star Legs + 27,000 total Group Volume\n"
+                "* **5 Star Executive (5SE):** 300 PQV + 9 Individual 1 Star Legs + 43,200 total Group Volume\n\n"
+                "*QUALIFIED LEG REQUIREMENTS (MUST MEET ALL):*\n"
+                "- Must be a Frontline Distributor (not PCUST)\n"
+                "- Minimum 150 PQV\n"
+                "- Must have 3 downline members with 50+ PQV each\n"
+                "- Volume is found from the uploaded Group Volume csv file\n\n"
+                "*CAR BONUS QUALIFICATIONS (1SE+):*\n"
+                "- 3 personally enrolled distributors with 100+ PQV each\n"
+                "- Must maintain 250 PQV personal volume\n"
+                "- $5,400 in group volume required\n"
+                "- Qualify for 3 consecutive months\n\n"
+                "---\n"
+                "### MULTI-STEP ANALYSIS & JUSTIFICATION\n\n"
+                f"**OUTPUT STEP 1: INITIAL ASSESSMENT & GAP ANALYSIS**\n"
+                f"1. **State the Goal:** \n   - \"Core Goal: Achieve {target_rank} for [User Name].\"\n   - \"Secondary Goal: Achieve the {target_rank} Car Bonus.\"\n\n"
+                "2. **User PQV Analysis:**\n   - Current Total PQV: [X] (from Group Volume Details)\n   - Required PQV: [Y] (based on target rank)\n   - Deficit/Surplus: [Z] PQV needed/available\n\n"
+                "3. **Frontline Legs Analysis:**\n   - List all Frontline DISTRIBUTORS with their current status:\n     - [Distributor Name]: [PQV] PV | [Qualified Leg Status] | [Action Items]\n   - Summary: \"The user currently has [Y] of [X] required Qualified Legs for {target_rank}.\"\n\n"
+                "4. **Car Bonus Legs Analysis (if applicable):**\n   - List all Personally Enrolled Distributors with 100+ PQV\n   - Note: These are in addition to the distributors required for rank qualification\n   - Summary: \"The user currently has [A] of 3 required Car Bonus Legs (personally enrolled distributors with 100+ PQV, in addition to rank requirements).\"\n\n"
+                "5. **Gap Analysis Summary:**\n   - PQV Needed: [X] more to reach target\n   - Qualified Legs Needed: [Y] more\n   - Car Bonus Legs Needed: [Z] more (if applicable)\n\n"
+                "**OUTPUT STEP 2: RESOURCE INVENTORY**\n"
+                "1. **Volume Bank:** [X] PV available from non-autoship PCUST orders\n"
+                "2. **Movable Accounts:** [Y] PCUSTs enrolled in last 60 days\n"
+                "3. **Surplus Volume:** [Z] PV available from user's excess\n"
+                "4. **Volume Pull-Up Potential:** [A] PV available from frontline members\n\n"
+                "**OUTPUT STEP 3: PRIORITIZED ACTION PLAN**\n"
+                "1. **PQV Optimization (If Needed):**\n   - Move [X] PV from Volume Bank\n   - Activate [Y] Movable Accounts for [Z] PV\n   - Pull up [A] PV from frontline members\n\n"
+                "2. **Leg Construction Plan:**\n   For each leg needed (in order of priority):\n   - **Target Leg #[N]:** [Distributor Name]\n   - **Current Status:** [PQV] PV | [Sub-legs] with 50+ PV\n   - **Action Plan:**\n     1. [Specific action 1]\n     2. [Specific action 2]\n     3. [Specific action 3]\n   - **Resources Needed:** [List resources required]\n   - **Expected Outcome:** [Expected PV/leg status after actions]\n\n"
+                "3. **Car Bonus Leg Development (If Applicable):**\n   - [Specific actions to develop/activate Car Bonus legs]\n   - [Timeline and milestones]\n\n"
+                f"**OUTPUT STEP 4: TIMELINE & MILESTONES**\n"
+                f"1. **Immediate (0-30 days):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
+                f"2. **Short-term (1-3 months):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
+                f"3. **Medium-term (3-6 months):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
+                f"**OUTPUT STEP 5: FINAL RECOMMENDATIONS**\n"
+                f"1. **Key Strategies:**\n   - [Strategy 1]\n   - [Strategy 2]\n   - [Strategy 3]\n\n"
+                f"2. **Risk Assessment:**\n   - [Potential risk 1] - [Mitigation strategy]\n   - [Potential risk 2] - [Mitigation strategy]\n\n"
+                f"3. **Success Metrics:**\n   - [Metric 1]: [Target] by [Date]\n   - [Metric 2]: [Target] by [Date]\n\n"
+                f"4. **Next Steps:**\n   - [Immediate next step 1]\n   - [Immediate next step 2]\n   - [Immediate next step 3]\n\n"
+                f"**IMPORTANT NOTES:**\n- All recommendations must comply with Youngevity's Policies & Procedures\n- Always prioritize ethical business practices\n- Focus on sustainable growth, not just short-term gains\n- Consider distributor development and team building\n- Factor in training and support requirements\n"
                 f"Now, analyze the following data for the user targeting {target_rank}:\n\n"
                 f"--- START OF Group Volume Details CSV (First 5 rows) ---\n{gvd_df.head().to_string()}\n...\n--- END OF Group Volume Details CSV ---\n\n"
                 f"--- START OF Advanced Genealogy Report CSV (First 5 rows) ---\n{agr_df.head().to_string()}\n...\n--- END OF Advanced Genealogy Report CSV ---"

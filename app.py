@@ -357,13 +357,24 @@ if generate_button:
                 gvd_df = pd.read_csv(uploaded_gvd)
                 agr_df = pd.read_csv(uploaded_agr)
                 
-                # Check for required columns
-                required_gvd_columns = ['Associate #', 'PQV', 'Volume']
-                required_agr_columns = ['ID#', 'Title', 'Enroller ID']
-                
+                # Check for required columns in Group Volume Details
+                required_gvd_columns = ['Associate #', 'Volume']
                 missing_gvd = [col for col in required_gvd_columns if col not in gvd_df.columns]
+                
+                # Check for required columns in Advanced Genealogy Report
+                # Handle both 'Enroller ID' and 'Enroller' column names
+                required_agr_columns = ['ID#', 'Title']
+                enroller_col = None
+                if 'Enroller ID' in agr_df.columns:
+                    enroller_col = 'Enroller ID'
+                elif 'Enroller' in agr_df.columns:
+                    enroller_col = 'Enroller'
+                else:
+                    required_agr_columns.append('Enroller ID or Enroller')
+                
                 missing_agr = [col for col in required_agr_columns if col not in agr_df.columns]
                 
+                # Display error if required columns are missing
                 if missing_gvd or missing_agr:
                     error_msg = "❌ Error: Missing required columns in "
                     if missing_gvd:
@@ -373,6 +384,16 @@ if generate_button:
                     error_msg += "Please check your CSV files and try again."
                     st.error(error_msg)
                     st.stop()
+                
+                # Calculate PQV by summing Volume for each Associate Number
+                st.info("📊 Processing data: Calculating PQV from Volume data by Associate Number...")
+                gvd_df['PQV'] = gvd_df.groupby('Associate #')['Volume'].transform('sum')
+                
+                # Standardize the Enroller column name
+                if enroller_col and enroller_col != 'Enroller ID':
+                    agr_df['Enroller ID'] = agr_df[enroller_col]
+                    
+                st.success("✅ CSV files validated and processed successfully!")
                 
                 gvd_data = gvd_df.to_csv(index=False)
                 agr_data = agr_df.to_csv(index=False)

@@ -12,44 +12,43 @@ st.set_page_config(
 SYSTEM_PROMPT = """
 You are an expert business analyst for a network marketing company called Youngevity. Your task is to act as a 'Rank Advancement Simulation Tool'. You will be given two CSV data files and a target rank. Your goal is to provide the most EFFICIENT and LOGICAL step-by-step action plan to help the user achieve their target rank.
 
-### PRIMARY GOAL
-Generate the most efficient and logical action plan possible. Efficiency means using the minimum resources required to meet a goal, and not wasting volume on distributors who are already qualified for a specific need.
+### CORE DEFINITIONS & CONTEXT
+1.  **Distributor vs. PCUST:** A "Leg" can ONLY be built under a frontline **Distributor** (Title is typically SAA, SRA, 1SE, etc.). A **PCUST** (Preferred Customer) CANNOT be a leg, no matter how much volume they have. Do not recommend building legs under a PCUST.
+2.  **The "User"**: The user is the main account holder, identified as Level 0 in the genealogy report.
 
-### BUSINESS RULES & RESOURCES
+### BUSINESS RESOURCES
+1.  **Resource A: "Volume Bank"**: You can move volume from non-autoship orders belonging to the user's frontline PCUSTs.
+2.  **Resource B: "Movable Accounts"**: You can move the entire account of a PCUST who was personally enrolled by the user within the last 60 days to be sponsored by a different distributor.
+3.  **Resource C: "User's Surplus Volume"**: You can move volume from one of the user's own orders, ONLY IF the user's remaining Personal Qualifying Volume (PQV) stays above their required minimum (e.g., 250 for 1SE, 300 for 2SE+).
+4.  **Resource D: "Volume Pull-Up"**: If the user's own PQV is deficient, you CAN move volume from a frontline member's non-autoship order UP to the user to cover the deficit.
 
-1.  **The "User"**: The user is the main account holder, identified as Level 0 in the genealogy report.
-2.  **Resource A: The "Volume Bank" (Pushing Volume Down)**: You can move volume from non-autoship orders (where Autoship = 'N') belonging to the user's frontline Preferred Customers (PCUSTs on Level .1). This volume can be moved to ANYONE in the user's downline.
-3.  **Resource B: "Movable Accounts"**: You can move the entire account of a PCUST who was personally enrolled by the user (`Enroller` = user) within the last 60 days. This moves the PCUST and all their volume to be sponsored by a different distributor.
-4.  **Resource C: "User's Surplus Volume"**: If the user has multiple personal orders, you can move volume from one of their orders to a downline member, but ONLY IF the user's remaining Personal Qualifying Volume (PQV) stays above their required minimum (e.g., 250 for 1SE, 300 for 2SE+).
-5.  **Resource D: "Volume Pull-Up"**: If the user's own PQV is deficient for their target rank, you CAN move volume from any frontline member's non-autoship order UP to the user to cover the deficit.
+### UNIVERSAL STRATEGIC PATTERN
+A highly successful strategy is to use the "Volume Bank" (Resource A) as a central pool of resources. The goal is to strategically move this volume from non-qualifying PCUSTs DOWN to frontline DISTRIBUTORS who need a PQV boost. This empowers the Distributors to become Qualified Legs, which in turn advances the user's rank. **Your plans should follow this successful strategic pattern: use PCUST volume to empower DISTRIBUTOR legs.**
 
-### RANK REQUIREMENTS
+### RANK REQUIREMENTS & STRATEGIC THOUGHT PROCESS
 
-*   **1 Star Executive (1SE):** Requires 250 User PQV and 3 'Qualified Legs'.
-*   **2 Star Executive (2SE) and higher:** Requires 300 User PQV and an increasing number of 1SE legs.
-*   **Definition of a Qualified Leg (for 1SE):** A frontline distributor who has at least 150 PQV THEMSELVES (Self-Qualified), AND has at least 3 downline members under them, each with at least 50 PQV (Sub-Legs).
-*   **1SE Car Bonus:** Requires 3 *additional* personally enrolled distributors with at least 100 PQV.
+**Step 1: Analyze User's PQV Gap**
+- Determine the user's personal PQV requirement. If deficient, your #1 priority is to recommend a "Volume Pull-Up" (Resource D) to fix it.
 
-### STRATEGIC HIERARCHY & THOUGHT PROCESS (Follow these steps exactly)
+**Step 2: Inventory All Other Resources**
+- Create an internal list of your available "Volume Bank" orders (A), "Movable Accounts" (B), and user's "Surplus Volume" (C).
 
-1.  **Analyze User's PQV Gap**: First, determine the user's personal PQV requirement for the target rank. Are they deficient?
-    *   If YES, the #1 priority is to fix this. Recommend using "Volume Pull-Up" (Resource D) to move the smallest amount of volume needed from a frontline member up to the user.
-    *   If NO, proceed.
+**Step 3: Construct Legs Sequentially**
+- For the target rank, determine how many "Qualified Legs" are needed. Address one leg at a time.
+- **A. Select a Candidate Leg:** Choose a frontline DISTRIBUTOR (NOT a PCUST) who is closest to qualifying.
+- **B. Check Self-Qualification (150+ PQV):** Does the Distributor have 150+ PQV?
+    - If NO, recommend moving the smallest amount of volume from your resources (A or C) to get them over 150.
+    - If YES, DO NOT move volume to them. Proceed to check their sub-legs.
+- **C. Check Sub-Legs (3x members with 50+ PQV):** Does the Distributor have 3 sub-legs with 50+ PQV?
+    - If NO, your first priority is to use "Movable Accounts" (Resource B). Recommend moving a new PCUST account under them.
+    - If no movable accounts are available, recommend using the "Volume Bank" (Resource A) to move volume to their existing downline members to get them over 50 PQV.
+- **D. Certify the Leg:** Once a Distributor is fully qualified, mark them as complete and move to the next leg.
 
-2.  **Inventory All Other Resources**: Create an internal list of your available "Volume Bank" orders (Resource A), "Movable Accounts" (Resource B), and any of the user's "Surplus Volume" (Resource C).
+**Step 4: Address Bonus Requirements Last**
+- After the primary rank legs are built, use any leftover resources to meet Car Bonus or other requirements.
 
-3.  **Construct Legs Sequentially**: Address one required leg at a time.
-    *   **A. Check Self-Qualification**: Look at a frontline distributor. Do they have 150+ PQV?
-        *   If NO, find the smallest possible order from your available resources (A or C) to get them over 150 PQV. This is your next recommended action.
-        *   If YES, DO NOT move any more volume to them. They are self-qualified. Proceed to the next step.
-    *   **B. Check Sub-Legs**: Now, look at that same frontline distributor's downline. How many members have 50+ PQV?
-        *   If they need more sub-legs, your first priority is to use "Movable Accounts" (Resource B). Recommend moving a new PCUST account under them.
-        *   If there are no movable accounts, or you need to qualify an existing downline member, find the smallest order from your available resources (A or C) to get that sub-leg member over 50 PQV.
-    *   **C. Certify the Leg**: Once a frontline distributor is fully qualified, mark them as complete and move to the next leg you need to build.
-
-4.  **Address Bonus Requirements Last**: After the primary rank legs are constructed, address any remaining bonus requirements using any leftover resources.
-
-5.  **Final Output**: Present the final, efficient plan using the specified Markdown format. If a goal is not possible, state exactly why (e.g., "Goal not achievable: Insufficient volume in the 'Volume Bank' to create the required 3 sub-legs for Distributor X.").
+**Step 5: Final Output**
+- Present the final, efficient plan using Markdown. If a goal is not possible, state exactly why.
 """
 
 # --- App Title and Instructions ---
@@ -99,6 +98,13 @@ if generate_button:
                 f"--- START OF Advanced Genealogy Report CSV ---\n{agr_data}\n--- END OF Advanced Genealogy Report CSV ---\n\n"
                 f"--- TARGET RANK ---\n{target_rank}\n--- END OF TARGET RANK ---"
             )
+            
+            # Store the initial prompt for the chat session
+            st.session_state.full_initial_prompt = full_prompt
+            
+            # Clear previous chat messages when generating a new plan
+            if "messages" in st.session_state:
+                del st.session_state.messages
 
             response = model.generate_content(full_prompt)
             st.session_state.api_response = response.text
@@ -117,3 +123,52 @@ if generate_button:
 st.markdown("---")
 st.subheader("Your Personalized Action Plan")
 st.markdown(st.session_state.api_response, unsafe_allow_html=True)
+
+# --- Part 2: Interactive Follow-up Chat ---
+st.markdown("---")
+st.subheader("Got Questions? Refine Your Plan")
+
+# Use session state to store the conversation history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display previous messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# The user's chat input box
+if prompt := st.chat_input("Ask a follow-up question... e.g., 'What if I move volume from X to Y instead?'"):
+    # Add user's message to the history and display it
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Show a spinner while the AI thinks about the follow-up
+    with st.spinner("Thinking..."):
+        try:
+            # Re-initialize the model (important for chat)
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            
+            # Start a chat session with the full history
+            chat = model.start_chat(
+                history=[
+                    {"role": "user", "parts": [st.session_state.get("full_initial_prompt", "")]},
+                    {"role": "model", "parts": [st.session_state.get("api_response", "")]}
+                ]
+            )
+
+            # Send the new follow-up question
+            response = chat.send_message(prompt)
+            
+            # Get the AI's new response
+            follow_up_response = response.text
+            
+            # Add the AI's response to history and display it
+            st.session_state.messages.append({"role": "assistant", "content": follow_up_response})
+            with st.chat_message("assistant"):
+                st.markdown(follow_up_response)
+
+        except Exception as e:
+            st.error(f"An error occurred during the follow-up chat: {str(e)}")

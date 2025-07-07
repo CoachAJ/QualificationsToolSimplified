@@ -174,7 +174,7 @@ Before you do anything, you MUST consult this knowledge base. The rules and defi
 *CAR BONUS QUALIFICATIONS (1SE+):*
 - 3 personally enrolled distributors with 100+ PQV each
 - Must maintain 250 PQV personal volume
-- $5,000 in group volume required
+- $5,400 in group volume required
 - Qualify for 3 consecutive months
 
 ---
@@ -197,7 +197,8 @@ Before you do anything, you MUST consult this knowledge base. The rules and defi
 
 4. **Car Bonus Legs Analysis (if applicable):**
    - List all Personally Enrolled Distributors with 100+ PQV
-   - Summary: "The user currently has [A] of 3 required Car Bonus Legs."
+   - Note: These are in addition to the distributors required for rank qualification
+   - Summary: "The user currently has [A] of 3 required Car Bonus Legs (personally enrolled distributors with 100+ PQV, in addition to rank requirements)."
 
 5. **Gap Analysis Summary:**
    - PQV Needed: [X] more to reach target

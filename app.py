@@ -2,6 +2,129 @@ import streamlit as st
 import google.generativeai as genai
 import pandas as pd
 
+# --- Helper function to build prompt consistently ---
+def build_prompt(target_rank_value, gvd_dataframe, agr_dataframe):
+    """Build a complete prompt for the AI model using consistent target rank references.
+    
+    Args:
+        target_rank_value (str): The selected target rank from session state
+        gvd_dataframe (DataFrame): The Group Volume Details dataframe
+        agr_dataframe (DataFrame): The Advanced Genealogy Report dataframe
+        
+    Returns:
+        str: The complete prompt ready for AI processing
+    """
+    # Part 1: Knowledge base
+    knowledge_base = f"{COMPENSATION_PLAN_TEXT}\n\n{GLOSSARY_TEXT}\n\n{POLICIES_TEXT}"
+    
+    # Part 2: Core definitions
+    core_definitions = (
+        "### CORE DEFINITIONS & UNBREAKABLE RULES\n"
+        "1. **DATA UNIFICATION RULE (CRITICAL FIRST STEP):** Before any analysis, you MUST mentally join the two data sources. The 'ID#' column in 'AdvancedGenealogyReport.csv' corresponds to the 'Associate #' column in 'Group Volume Details.csv'.\n\n"
+        "2. **DISTRIBUTOR CLASSIFICATION:** After unifying the data, classify each person:\n   - If 'Title' is 'PCUST' → CUSTOMER (cannot be a leg)\n   - If 'Title' is anything else (SAA, SRA, 1SE, BRA, DIST, etc.) → DISTRIBUTOR (can be a leg)\n\n"
+        "3. **PRINCIPLE OF MINIMUM SUFFICIENT ACTION:** Use the smallest amount of resources necessary to meet requirements. Once a distributor or leg is qualified, STOP allocating resources to them.\n\n"
+        "4. **VOLUME SOURCE:** All volume data comes from the 'Volume' column in 'Group Volume Details.csv'.\n\n"
+    )
+    
+    # Part 3: Business resources
+    business_resources = (
+        "### BUSINESS RESOURCES\n"
+        "1. **Volume Bank:** Non-autoship orders from frontline PCUSTs or Distributor volume over and above the required threshold found in additional orders in the same period\n"
+        "2. **Movable Accounts:** PCUST accounts enrolled within last 60 days\n"
+        "3. **User's Surplus Volume:** User's excess volume above rank requirements\n"
+        "4. **Volume Pull-Up:** Move volume from frontline members to user if needed\n\n"
+    )
+    
+    # Part 4: Rank requirements
+    rank_requirements = (
+        "### RANK REQUIREMENTS (CRITICAL - MUST FOLLOW EXACTLY)\n"
+        "* **1 Star Executive (1SE):** 250 PQV + 3 Qualified Legs + 5,400 total Group Volume\n"
+        "* **2 Star Executive (2SE):** 300 PQV + 3 Individual 1 Star Legs + 7,500 total Group Volume\n"
+        "* **3 Star Executive (3SE):** 300 PQV + 5 Individual 1 Star Legs + 10,500 total Group Volume\n"
+        "* **4 Star Executive (4SE):** 300 PQV + 6 Individual 1 Star Legs + 27,000 total Group Volume\n"
+        "* **5 Star Executive (5SE):** 300 PQV + 9 Individual 1 Star Legs + 43,200 total Group Volume\n\n"
+        "*QUALIFIED LEG REQUIREMENTS (MUST MEET ALL):*\n"
+        "- Must be a Frontline Distributor (not PCUST)\n"
+        "- Minimum 150 PQV\n"
+        "- Must have 3 downline members with 50+ PQV each\n"
+        "- Volume is found from the uploaded Group Volume csv file\n\n"
+        "*CAR BONUS QUALIFICATIONS (1SE+):*\n"
+        "- 3 personally enrolled distributors with 100+ PQV each\n"
+        "- Must maintain 250 PQV personal volume\n"
+        "- $5,400 in group volume required\n"
+        "- Qualify for 3 consecutive months\n\n"
+    )
+    
+    # Part 5: Analysis section with target rank
+    analysis_part1 = (
+        "---\n"
+        "### MULTI-STEP ANALYSIS & JUSTIFICATION\n\n"
+        "**OUTPUT STEP 1: INITIAL ASSESSMENT & GAP ANALYSIS**\n"
+        f"1. **State the Goal:** \n   - \"Core Goal: Achieve **{target_rank_value}** for [User Name].\"\n   - \"Secondary Goal: Achieve the **{target_rank_value}** Car Bonus.\"\n\n"
+        "2. **User PQV Analysis:**\n   - Current Total PQV: [X] (from Group Volume Details)\n   - Required PQV: [Y] (based on target rank)\n   - Deficit/Surplus: [Z] PQV needed/available\n\n"
+    )
+    
+    # Part 6: Analysis with target rank continued
+    analysis_part2 = (
+        f"3. **Frontline Legs Analysis:**\n   - List all Frontline DISTRIBUTORS with their current status:\n     - [Distributor Name]: [PQV] PV | [Qualified Leg Status] | [Action Items]\n   - Summary: \"The user currently has [Y] of [X] required Qualified Legs for **{target_rank_value}**.\"\n\n"
+        f"4. **Car Bonus Legs Analysis (if applicable):**\n   - List all Personally Enrolled Distributors with 100+ PQV\n   - Note: These are in addition to the distributors required for rank qualification\n   - Summary: \"The user currently has [A] of 3 required Car Bonus Legs (personally enrolled distributors with 100+ PQV, in addition to rank requirements).\"\n\n"
+    )
+    
+    # Part 7: Gap analysis and resource inventory
+    gap_analysis = (
+        "5. **Gap Analysis Summary:**\n   - PQV Needed: [X] more to reach target\n   - Qualified Legs Needed: [Y] more\n   - Car Bonus Legs Needed: [Z] more (if applicable)\n\n"
+        "**OUTPUT STEP 2: RESOURCE INVENTORY**\n"
+        "1. **Volume Bank:** [X] PV available from non-autoship PCUST orders\n"
+        "2. **Movable Accounts:** [Y] PCUSTs enrolled in last 60 days\n"
+        "3. **Surplus Volume:** [Z] PV available from user's excess\n"
+        "4. **Volume Pull-Up Potential:** [A] PV available from frontline members\n\n"
+    )
+    
+    # Part 8: Action plan
+    action_plan = (
+        "**OUTPUT STEP 3: PRIORITIZED ACTION PLAN**\n"
+        "1. **PQV Optimization (If Needed):**\n   - Move [X] PV from Volume Bank\n   - Activate [Y] Movable Accounts for [Z] PV\n   - Pull up [A] PV from frontline members\n\n"
+        "2. **Leg Construction Plan:**\n   For each leg needed (in order of priority):\n   - **Target Leg #[N]:** [Distributor Name]\n   - **Current Status:** [PQV] PV | [Sub-legs] with 50+ PV\n   - **Action Plan:**\n     1. [Specific action 1]\n     2. [Specific action 2]\n     3. [Specific action 3]\n   - **Resources Needed:** [List resources required]\n   - **Expected Outcome:** [Expected PV/leg status after actions]\n\n"
+        "3. **Car Bonus Leg Development (If Applicable):**\n   - [Specific actions to develop/activate Car Bonus legs]\n   - [Timeline and milestones]\n\n"
+    )
+    
+    # Part 9: Timeline and recommendations
+    timeline = (
+        "**OUTPUT STEP 4: TIMELINE & MILESTONES**\n"
+        "1. **Immediate (0-30 days):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
+        "2. **Short-term (1-3 months):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
+        "3. **Medium-term (3-6 months):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
+    )
+    
+    # Part 10: Final recommendations
+    recommendations = (
+        "**OUTPUT STEP 5: FINAL RECOMMENDATIONS**\n"
+        "1. **Key Strategies:**\n   - [Strategy 1]\n   - [Strategy 2]\n   - [Strategy 3]\n\n"
+        "2. **Risk Assessment:**\n   - [Potential risk 1] - [Mitigation strategy]\n   - [Potential risk 2] - [Mitigation strategy]\n\n"
+        "3. **Success Metrics:**\n   - [Metric 1]: [Target] by [Date]\n   - [Metric 2]: [Target] by [Date]\n\n"
+        "4. **Next Steps:**\n   - [Immediate next step 1]\n   - [Immediate next step 2]\n   - [Immediate next step 3]\n\n"
+        "**IMPORTANT NOTES:**\n- All recommendations must comply with Youngevity's Policies & Procedures\n- Always prioritize ethical business practices\n- Focus on sustainable growth, not just short-term gains\n- Consider distributor development and team building\n- Factor in training and support requirements"
+    )
+    
+    # Assemble the full prompt
+    full_prompt = (
+        f"{knowledge_base}\n\n"
+        f"{core_definitions}"
+        f"{business_resources}"
+        f"{rank_requirements}"
+        f"{analysis_part1}"
+        f"{analysis_part2}"
+        f"{gap_analysis}"
+        f"{action_plan}"
+        f"{timeline}"
+        f"{recommendations}\n\n"
+        f"Now, analyze the following data for the user targeting {target_rank_value}:\n\n"
+        f"--- START OF Group Volume Details CSV (First 5 rows) ---\n{gvd_dataframe.head().to_string()}\n...\n--- END OF Group Volume Details CSV ---\n\n"
+        f"--- START OF Advanced Genealogy Report CSV (First 5 rows) ---\n{agr_dataframe.head().to_string()}\n...\n--- END OF Advanced Genealogy Report CSV ---"
+    )
+    
+    return full_prompt
+
 # ==============================================================================
 # --- KNOWLEDGE BASE: REFERENCE DOCUMENT TEXT ---
 # ==============================================================================
@@ -305,8 +428,15 @@ Your personal AI analyst for strategic business growth. Follow these steps:
 """)
 
 # --- Session State Initialization ---
+# Initialize all required session state variables
 if "api_response" not in st.session_state:
     st.session_state.api_response = "### Your Strategic Plan Will Appear Here\n\n*Please fill in all the fields above and click 'Generate Plan' to begin.*"
+if "target_rank" not in st.session_state:
+    st.session_state.target_rank = "1 Star Executive"
+if "full_initial_prompt" not in st.session_state:
+    st.session_state.full_initial_prompt = ""
+if "raw_data" not in st.session_state:
+    st.session_state.raw_data = {"target_rank": st.session_state.target_rank}
 
 # --- User Interface Components ---
 with st.sidebar:
@@ -332,13 +462,12 @@ with st.sidebar:
             help="This file contains the hierarchical relationship data of your organization."
         )
 
-    with st.expander("🎯 Step 3: Set Your Goal", expanded=True):
-        st.caption("Select the rank you're working towards.")
-        st.session_state.target_rank = st.selectbox(
-            "Target Rank",
+    with st.expander("🎯 Step 3: Set Target Rank", expanded=True):
+        # Directly set target_rank in session state when the selection changes
+        target_rank = st.selectbox(
+            "Select your target rank:",
             ("1 Star Executive", "2 Star Executive", "3 Star Executive", "4 Star Executive", "5 Star Executive"),
-            index=0,
-            help="The rank you want to achieve next."
+            key="target_rank"  # This automatically stores the selection in st.session_state.target_rank
         )
         # Store the target rank in a variable for immediate use
         target_rank = st.session_state.target_rank
@@ -396,125 +525,15 @@ if generate_button:
                 st.error(f"❌ Error reading CSV files: {str(e)}. Please check the file format and try again.")
                 st.stop()
 
-            # Build the prompt parts separately to avoid nesting issues
-            # Part 1: Knowledge base
-            knowledge_base = f"{COMPENSATION_PLAN_TEXT}\n\n{GLOSSARY_TEXT}\n\n{POLICIES_TEXT}"
-            
-            # Part 2: Core definitions
-            core_definitions = (
-                "### CORE DEFINITIONS & UNBREAKABLE RULES\n"
-                "1. **DATA UNIFICATION RULE (CRITICAL FIRST STEP):** Before any analysis, you MUST mentally join the two data sources. The 'ID#' column in 'AdvancedGenealogyReport.csv' corresponds to the 'Associate #' column in 'Group Volume Details.csv'.\n\n"
-                "2. **DISTRIBUTOR CLASSIFICATION:** After unifying the data, classify each person:\n   - If 'Title' is 'PCUST' → CUSTOMER (cannot be a leg)\n   - If 'Title' is anything else (SAA, SRA, 1SE, BRA, DIST, etc.) → DISTRIBUTOR (can be a leg)\n\n"
-                "3. **PRINCIPLE OF MINIMUM SUFFICIENT ACTION:** Use the smallest amount of resources necessary to meet requirements. Once a distributor or leg is qualified, STOP allocating resources to them.\n\n"
-                "4. **VOLUME SOURCE:** All volume data comes from the 'Volume' column in 'Group Volume Details.csv'.\n\n"
-            )
-            
-            # Part 3: Business resources
-            business_resources = (
-                "### BUSINESS RESOURCES\n"
-                "1. **Volume Bank:** Non-autoship orders from frontline PCUSTs or Distributor volume over and above the required threshold found in additional orders in the same period\n"
-                "2. **Movable Accounts:** PCUST accounts enrolled within last 60 days\n"
-                "3. **User's Surplus Volume:** User's excess volume above rank requirements\n"
-                "4. **Volume Pull-Up:** Move volume from frontline members to user if needed\n\n"
-            )
-            
-            # Part 4: Rank requirements
-            rank_requirements = (
-                "### RANK REQUIREMENTS (CRITICAL - MUST FOLLOW EXACTLY)\n"
-                "* **1 Star Executive (1SE):** 250 PQV + 3 Qualified Legs + 5,400 total Group Volume\n"
-                "* **2 Star Executive (2SE):** 300 PQV + 3 Individual 1 Star Legs + 7,500 total Group Volume\n"
-                "* **3 Star Executive (3SE):** 300 PQV + 5 Individual 1 Star Legs + 10,500 total Group Volume\n"
-                "* **4 Star Executive (4SE):** 300 PQV + 6 Individual 1 Star Legs + 27,000 total Group Volume\n"
-                "* **5 Star Executive (5SE):** 300 PQV + 9 Individual 1 Star Legs + 43,200 total Group Volume\n\n"
-                "*QUALIFIED LEG REQUIREMENTS (MUST MEET ALL):*\n"
-                "- Must be a Frontline Distributor (not PCUST)\n"
-                "- Minimum 150 PQV\n"
-                "- Must have 3 downline members with 50+ PQV each\n"
-                "- Volume is found from the uploaded Group Volume csv file\n\n"
-                "*CAR BONUS QUALIFICATIONS (1SE+):*\n"
-                "- 3 personally enrolled distributors with 100+ PQV each\n"
-                "- Must maintain 250 PQV personal volume\n"
-                "- $5,400 in group volume required\n"
-                "- Qualify for 3 consecutive months\n\n"
-            )
-            
-            # Make sure we have the target rank from session state
-            current_target_rank = st.session_state.target_rank
-            
-            # Part 5: Analysis section with target rank
-            analysis_part1 = (
-                "---\n"
-                "### MULTI-STEP ANALYSIS & JUSTIFICATION\n\n"
-                "**OUTPUT STEP 1: INITIAL ASSESSMENT & GAP ANALYSIS**\n"
-                f"1. **State the Goal:** \n   - \"Core Goal: Achieve **{current_target_rank}** for [User Name].\"\n   - \"Secondary Goal: Achieve the **{current_target_rank}** Car Bonus.\"\n\n"
-                "2. **User PQV Analysis:**\n   - Current Total PQV: [X] (from Group Volume Details)\n   - Required PQV: [Y] (based on target rank)\n   - Deficit/Surplus: [Z] PQV needed/available\n\n"
-            )
-            
-            # Part 6: Analysis with target rank continued
-            analysis_part2 = (
-                f"3. **Frontline Legs Analysis:**\n   - List all Frontline DISTRIBUTORS with their current status:\n     - [Distributor Name]: [PQV] PV | [Qualified Leg Status] | [Action Items]\n   - Summary: \"The user currently has [Y] of [X] required Qualified Legs for **{current_target_rank}**.\"\n\n"
-                f"4. **Car Bonus Legs Analysis (if applicable):**\n   - List all Personally Enrolled Distributors with 100+ PQV\n   - Note: These are in addition to the distributors required for rank qualification\n   - Summary: \"The user currently has [A] of 3 required Car Bonus Legs (personally enrolled distributors with 100+ PQV, in addition to rank requirements).\"\n\n"
-            )
-            
-            # Part 7: Gap analysis and resource inventory
-            gap_analysis = (
-                "5. **Gap Analysis Summary:**\n   - PQV Needed: [X] more to reach target\n   - Qualified Legs Needed: [Y] more\n   - Car Bonus Legs Needed: [Z] more (if applicable)\n\n"
-                "**OUTPUT STEP 2: RESOURCE INVENTORY**\n"
-                "1. **Volume Bank:** [X] PV available from non-autoship PCUST orders\n"
-                "2. **Movable Accounts:** [Y] PCUSTs enrolled in last 60 days\n"
-                "3. **Surplus Volume:** [Z] PV available from user's excess\n"
-                "4. **Volume Pull-Up Potential:** [A] PV available from frontline members\n\n"
-            )
-            
-            # Part 8: Action plan
-            action_plan = (
-                "**OUTPUT STEP 3: PRIORITIZED ACTION PLAN**\n"
-                "1. **PQV Optimization (If Needed):**\n   - Move [X] PV from Volume Bank\n   - Activate [Y] Movable Accounts for [Z] PV\n   - Pull up [A] PV from frontline members\n\n"
-                "2. **Leg Construction Plan:**\n   For each leg needed (in order of priority):\n   - **Target Leg #[N]:** [Distributor Name]\n   - **Current Status:** [PQV] PV | [Sub-legs] with 50+ PV\n   - **Action Plan:**\n     1. [Specific action 1]\n     2. [Specific action 2]\n     3. [Specific action 3]\n   - **Resources Needed:** [List resources required]\n   - **Expected Outcome:** [Expected PV/leg status after actions]\n\n"
-                "3. **Car Bonus Leg Development (If Applicable):**\n   - [Specific actions to develop/activate Car Bonus legs]\n   - [Timeline and milestones]\n\n"
-            )
-            
-            # Part 9: Timeline and recommendations
-            timeline = (
-                f"**OUTPUT STEP 4: TIMELINE & MILESTONES**\n"
-                f"1. **Immediate (0-30 days):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
-                f"2. **Short-term (1-3 months):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
-                f"3. **Medium-term (3-6 months):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
-            )
-            
-            # Part 10: Final recommendations
-            recommendations = (
-                f"**OUTPUT STEP 5: FINAL RECOMMENDATIONS**\n"
-                f"1. **Key Strategies:**\n   - [Strategy 1]\n   - [Strategy 2]\n   - [Strategy 3]\n\n"
-                f"2. **Risk Assessment:**\n   - [Potential risk 1] - [Mitigation strategy]\n   - [Potential risk 2] - [Mitigation strategy]\n\n"
-                f"3. **Success Metrics:**\n   - [Metric 1]: [Target] by [Date]\n   - [Metric 2]: [Target] by [Date]\n\n"
-                f"4. **Next Steps:**\n   - [Immediate next step 1]\n   - [Immediate next step 2]\n   - [Immediate next step 3]\n\n"
-                f"**IMPORTANT NOTES:**\n- All recommendations must comply with Youngevity's Policies & Procedures\n- Always prioritize ethical business practices\n- Focus on sustainable growth, not just short-term gains\n- Consider distributor development and team building\n- Factor in training and support requirements"
-            )
-            
-            # Assemble the full prompt
-            full_prompt = (
-                f"{knowledge_base}\n\n"
-                f"{core_definitions}"
-                f"{business_resources}"
-                f"{rank_requirements}"
-                f"{analysis_part1}"
-                f"{analysis_part2}"
-                f"{gap_analysis}"
-                f"{action_plan}"
-                f"{timeline}"
-                f"{recommendations}\n\n"
-                f"Now, analyze the following data for the user targeting {current_target_rank}:\n\n"
-                f"--- START OF Group Volume Details CSV (First 5 rows) ---\n{gvd_df.head().to_string()}\n...\n--- END OF Group Volume Details CSV ---\n\n"
-                f"--- START OF Advanced Genealogy Report CSV (First 5 rows) ---\n{agr_df.head().to_string()}\n...\n--- END OF Advanced Genealogy Report CSV ---"
-            )
+            # Use the build_prompt function for consistent prompt construction
+            full_prompt = build_prompt(st.session_state.target_rank, gvd_df, agr_df)
             
             # Store the initial prompt and raw data for the chat session
             st.session_state.full_initial_prompt = full_prompt
             st.session_state.raw_data = {
                 'gvd': gvd_data,
                 'agr': agr_data,
-                'target_rank': current_target_rank
+                'target_rank': st.session_state.target_rank
             }
             
             # Clear previous chat messages when generating a new plan
@@ -570,11 +589,41 @@ with main_col:
 with side_col:
     st.subheader("📊 Quick Stats")
     with st.container(border=True, height=200):
-        st.markdown("""
-        - **Target Rank:** *Not set*
-        - **PQV Required:** *Calculating...*
-        - **Legs Needed:** *Calculating...*
-        - **Car Bonus Legs:** *Calculating...*
+        # Display dynamic stats based on target_rank if available
+        target_rank = st.session_state.target_rank
+        
+        # Set default values
+        pqv_required = "*Calculating...*"
+        legs_needed = "*Calculating...*"
+        car_bonus_legs = "*Calculating...*"
+        
+        # Set requirements based on target rank
+        if target_rank == "1 Star Executive":
+            pqv_required = "250 PQV"
+            legs_needed = "3 Qualified Legs"
+            car_bonus_legs = "N/A"
+        elif target_rank == "2 Star Executive":
+            pqv_required = "300 PQV"
+            legs_needed = "3 Individual 1 Star Legs"
+            car_bonus_legs = "N/A"
+        elif target_rank == "3 Star Executive":
+            pqv_required = "300 PQV"
+            legs_needed = "5 Individual 1 Star Legs"
+            car_bonus_legs = "N/A"
+        elif target_rank == "4 Star Executive":
+            pqv_required = "300 PQV"
+            legs_needed = "6 Individual 1 Star Legs"
+            car_bonus_legs = "Car Eligible"
+        elif target_rank == "5 Star Executive":
+            pqv_required = "300 PQV"
+            legs_needed = "9 Individual 1 Star Legs"
+            car_bonus_legs = "Car Qualified"
+            
+        st.markdown(f"""
+        - **Target Rank:** {target_rank}
+        - **PQV Required:** {pqv_required}
+        - **Legs Needed:** {legs_needed}
+        - **Car Bonus Legs:** {car_bonus_legs}
         """)
     
     st.markdown("---")
@@ -590,98 +639,85 @@ st.subheader("💬 Need Clarification? Ask Me Anything")
 st.caption("Ask follow-up questions about your plan, like 'How can I qualify Leg #2 faster?' or 'What if I move volume from X to Y?'")
 
 # Initialize chat history if it doesn't exist
-if "messages" not in st.session_state:
+# Initialize chat history if it doesn't exist
+if "messages" not in st.session_state or st.session_state.messages == []:
     st.session_state.messages = []
 
-# Display chat messages from history on app rerun
+# Display previous chat messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Accept user input
-if prompt := st.chat_input("Type your question here..."):
-    if not api_key:
-        st.error("❌ Please enter your Google AI API key in the sidebar first.")
-        st.stop()
-        
-    # Add user message to chat history
+# Handle new user questions
+if prompt := st.chat_input("Ask a follow-up question about your rank advancement plan..."):
+    # Add user message to chat history and display it
     st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Display user message in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)
     
-    # Show a spinner while the AI generates a response
-    with st.spinner("Analyzing your question..."):
-        try:
-            # Initialize the model
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash-latest')
-            
-            # Prepare the chat history with context
-            chat_history = [
-                {
-                    "role": "user", 
-                    "parts": [f"Initial analysis request for {st.session_state.raw_data.get('target_rank', 'target rank')}:\n{st.session_state.get('full_initial_prompt', '')}"]
-                },
-                {"role": "model", "parts": [st.session_state.get("api_response", "")]}
-            ]
-            
-            # Add previous chat messages to the context
-            for msg in st.session_state.messages[:-1]:  # Exclude the current message
-                chat_history.append({
-                    "role": "user" if msg["role"] == "user" else "model", 
-                    "parts": [msg["content"]]
-                })
-            
-            # Add the current user's question with context
-            context_prompt = f"""
-            You are a Youngevity business analysis assistant. The user is working on achieving {st.session_state.raw_data.get('target_rank', 'their target rank')}.
-            
-            Previous analysis context:
-            {st.session_state.get('api_response', 'No previous analysis available.')}
-            
-            User's question: {prompt}
-            
-            Please provide a detailed, helpful response that:
-            1. Directly addresses the user's question
-            2. References specific details from their business analysis when relevant
-            3. Provides actionable advice based on Youngevity's compensation plan
-            4. Asks clarifying questions if the request is ambiguous
-            """
-            
-            # Start a chat session with the full history
-            chat = model.start_chat(history=chat_history)
-            
-            # Get the AI's response
-            response = chat.send_message(context_prompt)
-            
-            # Get the AI's response text
-            follow_up_response = response.text
-            
-            # Add assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": follow_up_response})
-            
-            # Display assistant response in chat message container
-            with st.chat_message("assistant"):
-                st.markdown(follow_up_response)
+    # Check if a plan has been generated first
+    if "raw_data" not in st.session_state or not st.session_state.raw_data:
+        st.error("⚠️ Please generate a rank advancement plan first before asking questions.")
+    else:
+        # Process the AI response
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                try:
+                    # Configure the API
+                    api_key = st.session_state.get("api_key", "")
+                    if not api_key:
+                        st.error("⚠️ Please provide your API Key first.")
+                        st.stop()
+                    
+                    # Setup AI model
+                    genai.configure(api_key=api_key)
+                    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                    
+                    # Get previous messages to maintain context
+                    chat_history = []
+                    for msg in st.session_state.messages:
+                        if msg["role"] == "user":
+                            chat_history.append({"role": "user", "parts": [msg["content"]]})
+                        else:
+                            chat_history.append({"role": "model", "parts": [msg["content"]]})
+                    
+                    # Start a chat and get relevant data from session state
+                    chat = model.start_chat(history=chat_history)
+                    raw_data = st.session_state.raw_data
+                    
+                    # Access target_rank safely from session_state with fallback
+                    current_target_rank = raw_data.get('target_rank', st.session_state.target_rank)
+                    
+                    # Construct a context for the follow-up question
+                    context = (
+                        f"The user is targeting the {current_target_rank} rank in Youngevity. "
+                        "Remember the rank requirements and car bonus qualifications as specified in the knowledge base. "
+                        "Base your answer on the previously analyzed data and the rank advancement plan you generated."
+                    )
+                    
+                    # Send the message with context
+                    complete_prompt = f"{context}\n\nUser's question: {prompt}"
+                    response = chat.send_message(complete_prompt)
+                    
+                    # Process and display the response
+                    if response.text:
+                        st.markdown(response.text)
+                        st.session_state.messages.append({"role": "assistant", "content": response.text})
+                    else:
+                        st.error("❌ Received an empty response. Please try a different question.")
                 
-            # Add a small delay for better UX
-            import time
-            time.sleep(0.5)
-
-        except Exception as e:
-            error_msg = f"""
-            ⚠️ Sorry, I encountered an error: {str(e)}
-            
-            Please try the following:
-            1. Check your internet connection
-            2. Verify your API key is valid and has sufficient quota
-            3. Try asking your question again
-            4. If the problem persists, please contact support
-            """
-            st.error(error_msg)
-            st.session_state.messages.append({"role": "assistant", "content": error_msg})
+                except Exception as e:
+                    error_msg = f"""
+                    ⚠️ Sorry, I encountered an error: {str(e)}
+                    
+                    Please try the following:
+                    1. Check your internet connection
+                    2. Verify your API key is valid and has sufficient quota
+                    3. Try asking your question again
+                    4. If the problem persists, please contact support
+                    """
+                    st.error(error_msg)
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
 
 # Add a clear chat button
 if st.session_state.messages:

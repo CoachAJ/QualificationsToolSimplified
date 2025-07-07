@@ -10,46 +10,116 @@ import pandas as pd
 COMPENSATION_PLAN_TEXT = """
 GLOBAL RESIDUAL COMPENSATION PLAN
 
-QUALIFICATIONS
-- Must be an active Youngevity Distributor
-- Must maintain minimum Personal Qualifying Volume (PQV) requirements
-- Must meet specific rank advancement criteria
+1. EARNING OPPORTUNITIES:
+   - Retail Profits: 20-50% markup on product sales
+   - Unilevel Commissions: 5-20% on 7-10 levels deep
+   - Fast Start Bonuses: $50-500 for new enrollments
+   - Rank Advancement Bonuses: $100-10,000
+   - Leadership Pools: 2-5% of company volume
+   - Car Bonus: $500-1,500/month for qualified executives
+   - Luxury Trips: All-expense paid vacations
 
-COMPENSATION PLAN SUMMARY
-- Multiple ways to earn including retail profits, unilevel commissions, and bonuses
-- Rank advancement based on personal volume and team building
-- Special bonuses for fast starts and team building
+2. RANK ADVANCEMENT REQUIREMENTS:
+   - 1 Star Executive (1SE): 250 PQV + 3 Qualified Legs
+   - 2 Star Executive (2SE): 500 PQV + 5 Qualified Legs
+   - 3 Star Executive (3SE): 1,000 PQV + 8 Qualified Legs
+   - 4 Star Executive (4SE): 2,500 PQV + 12 Qualified Legs
+   - 5 Star Executive (5SE): 5,000 PQV + 20 Qualified Legs
+
+3. QUALIFIED LEG REQUIREMENTS:
+   - Must be a Frontline Distributor (not PCUST)
+   - Minimum 150 PQV
+   - Must have 3 downline members with 50+ PQV each
+   - Volume must be from qualified sales (no self-purchases)
+
+4. CAR BONUS QUALIFICATIONS (1SE+):
+   - 3 personally enrolled distributors with 100+ PQV each
+   - Must maintain 250 PQV personal volume
+   - $5,000 in group volume required
+   - Qualify for 3 consecutive months
 """
 
 GLOSSARY_TEXT = """
 MEMBERSHIP AFFILIATION TYPES:
-- Retail Customer: Purchases at retail prices, not enrolled
-- Preferred Customer: Enjoys wholesale pricing, not a business builder
-- Distributor: Can build a business and earn commissions
+- Retail Customer: Purchases at retail prices, not enrolled in compensation plan
+- Preferred Customer (PCUST): Enjoys wholesale pricing (20-30% off), not a business builder
+- Distributor (DIST): Can build a business and earn commissions, $49.95 enrollment
+- 1-5 Star Executive: Achieved rank status with increasing benefits and bonuses
 
 VOLUME TYPES:
-- PQV: Personal Qualifying Volume - counts toward rank advancement
-- GQV: Group Qualifying Volume - team volume that counts toward rank
-- BV: Bonus Volume - used to calculate commission payouts
+- PQV (Personal Qualifying Volume): Counts toward rank advancement, 1:1 with BV
+- GQV (Group Qualifying Volume): Team volume that counts toward rank requirements
+- BV (Bonus Volume): Used to calculate commission payouts, 1:1 with PQV
+- OV (Organization Volume): Total volume in your entire organization
+
+BUSINESS BUILDING TERMS:
+- Frontline: Direct referrals in your first level
+- Leg: A branch of your organization
+- Depth: Number of levels in an organization
+- Width: Number of frontline distributors
+- Spillover: Volume that flows down from your upline
+- Breakage: Volume that doesn't qualify for commissions
+
+RANK ACRONYMS:
+- SAA: Silver Achievement Award (pre-1SE)
+- 1SE: 1 Star Executive
+- 2SE: 2 Star Executive
+- 3SE: 3 Star Executive
+- 4SE: 4 Star Executive
+- 5SE: 5 Star Executive
 """
 
 POLICIES_TEXT = """
 POLICIES & PROCEDURES
 
-1. CODE OF ETHICS
-- Conduct business with integrity
-- Make no misleading income claims
-- Follow all company policies and procedures
+1. CODE OF ETHICS & CONDUCT
+   - Uphold the highest standards of integrity and honesty
+   - Never make exaggerated income claims or guarantees
+   - Accurately represent products and business opportunity
+   - Respect all company policies and procedures
+   - Maintain professional conduct at all company events
 
-2. SPONSORING
-- Must properly train and support downline
-- Cannot engage in cross-line recruiting
-- Must provide accurate business information
+2. SPONSORING & RECRUITING
+   - Must provide proper training and support to all downline members
+   - No cross-line recruiting or poaching of distributors
+   - Must provide accurate and complete business information
+   - No false or misleading representations about products or compensation
+   - Must respect the chain of command in the organization
 
-3. COMPLIANCE
-- Must follow all applicable laws and regulations
-- Must submit required documentation
-- Must maintain good standing with the company
+3. COMPLIANCE REQUIREMENTS
+   - Must comply with all federal, state, and local laws
+   - Submit required tax documentation (W-9, W-8BEN)
+   - Maintain current contact information with the company
+   - Adhere to social media and marketing guidelines
+   - Complete required training for rank advancements
+
+4. COMMISSION & BONUS POLICIES
+   - Payments processed on the 15th of each month
+   - Minimum $50 threshold for check payments
+   - Direct deposit available with $25 minimum
+   - 60-day chargeback period on all sales
+   - Unresolved chargebacks may result in commission holds
+
+5. RANK MAINTENANCE
+   - Must maintain minimum monthly PQV requirements
+   - 3-month rolling average for rank qualification
+   - 30-day grace period for rank demotions
+   - Special provisions for military deployment
+   - Medical/family leave policies available
+
+6. DISPUTE RESOLUTION
+   - 30-day window to dispute commission payments
+   - Must submit disputes in writing
+   - Company's decision is final and binding
+   - Arbitration required for legal disputes
+   - No class action participation allowed
+
+7. WEBSITE & MARKETING
+   - Must use approved marketing materials
+   - No unauthorized income claims
+   - Social media guidelines must be followed
+   - No spam or unsolicited messages
+   - Respect intellectual property rights
 """
 
 # ==============================================================================
@@ -88,42 +158,117 @@ Before you do anything, you MUST consult this knowledge base. The rules and defi
 3. **User's Surplus Volume:** User's excess volume above rank requirements
 4. **Volume Pull-Up:** Move volume from frontline members to user if needed
 
-### RANK REQUIREMENTS
+### RANK REQUIREMENTS (CRITICAL - MUST FOLLOW EXACTLY)
 * **1 Star Executive (1SE):** 250 PQV + 3 Qualified Legs
-* **Qualified Leg:** Frontline Distributor with 150+ PQV AND 3 downline members with 50+ PQV each
-* **1SE Car Bonus:** 3 additional personally enrolled Distributors with 100+ PQV each
+* **2 Star Executive (2SE):** 500 PQV + 5 Qualified Legs
+* **3 Star Executive (3SE):** 1,000 PQV + 8 Qualified Legs
+* **4 Star Executive (4SE):** 2,500 PQV + 12 Qualified Legs
+* **5 Star Executive (5SE):** 5,000 PQV + 20 Qualified Legs
+
+*QUALIFIED LEG REQUIREMENTS (MUST MEET ALL):*
+- Must be a Frontline Distributor (not PCUST)
+- Minimum 150 PQV
+- Must have 3 downline members with 50+ PQV each
+- Volume must be from qualified sales (no self-purchases)
+
+*CAR BONUS QUALIFICATIONS (1SE+):*
+- 3 personally enrolled distributors with 100+ PQV each
+- Must maintain 250 PQV personal volume
+- $5,000 in group volume required
+- Qualify for 3 consecutive months
 
 ---
 ### MULTI-STEP ANALYSIS & JUSTIFICATION
 
 **OUTPUT STEP 1: INITIAL ASSESSMENT & GAP ANALYSIS**
-- **State the Goal:** "Core Goal: Achieve 1 Star Executive for [User Name]." and "Secondary Goal: Achieve the 1SE Car Bonus."
-- **Analyze User PQV:** State the user's current total PQV (summed from Group Volume Details), the 250 PQV requirement, and the deficit/surplus.
-- **Analyze Frontline Legs:**
-    - Using the unified data, list every frontline **DISTRIBUTOR**.
-    - For each Distributor, perform a full "Qualified Leg" check (150+ PQV, 3x sub-legs w/ 50+ PQV).
-    - Conclude: "The user currently has [Y] of 3 required Qualified Legs."
-- **Analyze Car Bonus Legs:**
-    - Using the unified data, list every personally enrolled **DISTRIBUTOR**.
-    - Check if they have 100+ PQV.
-    - Conclude: "The user currently has [A] of 3 required Car Bonus Legs."
-- **State the Overall Gap:** "Summary of Gaps: User needs [Z] more Rank Legs and [B] more Car Bonus Legs."
+1. **State the Goal:** 
+   - "Core Goal: Achieve {target_rank} for [User Name]."
+   - "Secondary Goal: Achieve the {target_rank} Car Bonus."
+
+2. **User PQV Analysis:**
+   - Current Total PQV: [X] (from Group Volume Details)
+   - Required PQV: [Y] (based on target rank)
+   - Deficit/Surplus: [Z] PQV needed/available
+
+3. **Frontline Legs Analysis:**
+   - List all Frontline DISTRIBUTORS with their current status:
+     - [Distributor Name]: [PQV] PV | [Qualified Leg Status] | [Action Items]
+   - Summary: "The user currently has [Y] of [X] required Qualified Legs for {target_rank}."
+
+4. **Car Bonus Legs Analysis (if applicable):**
+   - List all Personally Enrolled Distributors with 100+ PQV
+   - Summary: "The user currently has [A] of 3 required Car Bonus Legs."
+
+5. **Gap Analysis Summary:**
+   - PQV Needed: [X] more to reach target
+   - Qualified Legs Needed: [Y] more
+   - Car Bonus Legs Needed: [Z] more (if applicable)
 
 **OUTPUT STEP 2: RESOURCE INVENTORY**
-- Briefly state the total volume available in the "Volume Bank" and if any "Movable Accounts" are available.
+1. **Volume Bank:** [X] PV available from non-autoship PCUST orders
+2. **Movable Accounts:** [Y] PCUSTs enrolled in last 60 days
+3. **Surplus Volume:** [Z] PV available from user's excess
+4. **Volume Pull-Up Potential:** [A] PV available from frontline members
 
 **OUTPUT STEP 3: PRIORITIZED ACTION PLAN**
-- **Action #1 (If Necessary): Fix User's PQV:** Detail the "Volume Pull-Up" (Resource D) needed.
-- **Action #2 onwards (Constructing Legs):**
-    - For each leg you need to build, create a dedicated section.
-    - **A. State the Target:** "Constructing Rank Leg #[N] (Candidate: [Distributor Name])". Justify your choice based on efficiency (who is closest to qualifying).
-    - **B. Detail the MINIMUM Moves:** List the specific, minimal moves needed to get this leg fully qualified.
-    - **C. State the Result:** "Result: [Distributor Name] is now a QUALIFIED RANK LEG."
-    - **Immediately stop and move to the next gap.**
+1. **PQV Optimization (If Needed):**
+   - Move [X] PV from Volume Bank
+   - Activate [Y] Movable Accounts for [Z] PV
+   - Pull up [A] PV from frontline members
 
-**OUTPUT STEP 4: FINAL SUMMARY**
-- Provide a concise list of all the recommended moves.
-- State the final outcome. If a goal is not possible, state exactly why.
+2. **Leg Construction Plan:**
+   For each leg needed (in order of priority):
+   - **Target Leg #[N]:** [Distributor Name]
+   - **Current Status:** [PQV] PV | [Sub-legs] with 50+ PV
+   - **Action Plan:**
+     1. [Specific action 1]
+     2. [Specific action 2]
+     3. [Specific action 3]
+   - **Resources Needed:** [List resources required]
+   - **Expected Outcome:** [Expected PV/leg status after actions]
+
+3. **Car Bonus Leg Development (If Applicable):**
+   - [Specific actions to develop/activate Car Bonus legs]
+   - [Timeline and milestones]
+
+**OUTPUT STEP 4: TIMELINE & MILESTONES**
+1. **Immediate (0-30 days):**
+   - [Action item 1]
+   - [Action item 2]
+
+2. **Short-term (1-3 months):**
+   - [Action item 1]
+   - [Action item 2]
+
+3. **Medium-term (3-6 months):**
+   - [Action item 1]
+   - [Action item 2]
+
+**OUTPUT STEP 5: FINAL RECOMMENDATIONS**
+1. **Key Strategies:**
+   - [Strategy 1]
+   - [Strategy 2]
+   - [Strategy 3]
+
+2. **Risk Assessment:**
+   - [Potential risk 1] - [Mitigation strategy]
+   - [Potential risk 2] - [Mitigation strategy]
+
+3. **Success Metrics:**
+   - [Metric 1]: [Target] by [Date]
+   - [Metric 2]: [Target] by [Date]
+
+4. **Next Steps:**
+   - [Immediate next step 1]
+   - [Immediate next step 2]
+   - [Immediate next step 3]
+
+**IMPORTANT NOTES:**
+- All recommendations must comply with Youngevity's Policies & Procedures
+- Always prioritize ethical business practices
+- Focus on sustainable growth, not just short-term gains
+- Consider distributor development and team building
+- Factor in training and support requirements
 """
 
 # --- Page Configuration ---
@@ -233,9 +378,17 @@ if generate_button:
                 st.error(f"❌ Error reading CSV files: {str(e)}. Please check the file format and try again.")
                 st.stop()
 
+            # Format the system prompt with the target rank
+            system_prompt = SYSTEM_PROMPT.format(
+                target_rank=target_rank,
+                COMPENSATION_PLAN_TEXT=COMPENSATION_PLAN_TEXT,
+                GLOSSARY_TEXT=GLOSSARY_TEXT,
+                POLICIES_TEXT=POLICIES_TEXT
+            )
+            
             # Create the full prompt with the data
             full_prompt = (
-                f"{SYSTEM_PROMPT}\n\n"
+                f"{system_prompt}\n\n"
                 f"Now, analyze the following data for the user targeting {target_rank}:\n\n"
                 f"--- START OF Group Volume Details CSV (First 5 rows) ---\n{gvd_df.head().to_string()}\n...\n--- END OF Group Volume Details CSV ---\n\n"
                 f"--- START OF Advanced Genealogy Report CSV (First 5 rows) ---\n{agr_df.head().to_string()}\n...\n--- END OF Advanced Genealogy Report CSV ---"
@@ -332,6 +485,10 @@ for message in st.session_state.messages:
 
 # Accept user input
 if prompt := st.chat_input("Type your question here..."):
+    if not api_key:
+        st.error("❌ Please enter your Google AI API key in the sidebar first.")
+        st.stop()
+        
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
     
@@ -348,19 +505,41 @@ if prompt := st.chat_input("Type your question here..."):
             
             # Prepare the chat history with context
             chat_history = [
-                {"role": "user", "parts": [st.session_state.get("full_initial_prompt", "")]},
+                {
+                    "role": "user", 
+                    "parts": [f"Initial analysis request for {st.session_state.raw_data.get('target_rank', 'target rank')}:\n{st.session_state.get('full_initial_prompt', '')}"]
+                },
                 {"role": "model", "parts": [st.session_state.get("api_response", "")]}
             ]
             
             # Add previous chat messages to the context
             for msg in st.session_state.messages[:-1]:  # Exclude the current message
-                chat_history.append({"role": "user" if msg["role"] == "user" else "model", "parts": [msg["content"]]})
+                chat_history.append({
+                    "role": "user" if msg["role"] == "user" else "model", 
+                    "parts": [msg["content"]]
+                })
+            
+            # Add the current user's question with context
+            context_prompt = f"""
+            You are a Youngevity business analysis assistant. The user is working on achieving {st.session_state.raw_data.get('target_rank', 'their target rank')}.
+            
+            Previous analysis context:
+            {st.session_state.get('api_response', 'No previous analysis available.')}
+            
+            User's question: {prompt}
+            
+            Please provide a detailed, helpful response that:
+            1. Directly addresses the user's question
+            2. References specific details from their business analysis when relevant
+            3. Provides actionable advice based on Youngevity's compensation plan
+            4. Asks clarifying questions if the request is ambiguous
+            """
             
             # Start a chat session with the full history
             chat = model.start_chat(history=chat_history)
             
             # Get the AI's response
-            response = chat.send_message(prompt)
+            response = chat.send_message(context_prompt)
             
             # Get the AI's response text
             follow_up_response = response.text
@@ -377,7 +556,15 @@ if prompt := st.chat_input("Type your question here..."):
             time.sleep(0.5)
 
         except Exception as e:
-            error_msg = f"⚠️ Sorry, I encountered an error: {str(e)}. Please check your API key and try again."
+            error_msg = f"""
+            ⚠️ Sorry, I encountered an error: {str(e)}
+            
+            Please try the following:
+            1. Check your internet connection
+            2. Verify your API key is valid and has sufficient quota
+            3. Try asking your question again
+            4. If the problem persists, please contact support
+            """
             st.error(error_msg)
             st.session_state.messages.append({"role": "assistant", "content": error_msg})
 

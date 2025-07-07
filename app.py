@@ -334,12 +334,14 @@ with st.sidebar:
 
     with st.expander("🎯 Step 3: Set Your Goal", expanded=True):
         st.caption("Select the rank you're working towards.")
-        target_rank = st.selectbox(
+        st.session_state.target_rank = st.selectbox(
             "Target Rank",
             ("1 Star Executive", "2 Star Executive", "3 Star Executive", "4 Star Executive", "5 Star Executive"),
             index=0,
             help="The rank you want to achieve next."
         )
+        # Store the target rank in a variable for immediate use
+        target_rank = st.session_state.target_rank
 
     generate_button = st.button(
         "🚀 Generate Rank Up Plan",
@@ -436,18 +438,21 @@ if generate_button:
                 "- Qualify for 3 consecutive months\n\n"
             )
             
+            # Make sure we have the target rank from session state
+            current_target_rank = st.session_state.target_rank
+            
             # Part 5: Analysis section with target rank
             analysis_part1 = (
                 "---\n"
                 "### MULTI-STEP ANALYSIS & JUSTIFICATION\n\n"
                 "**OUTPUT STEP 1: INITIAL ASSESSMENT & GAP ANALYSIS**\n"
-                f"1. **State the Goal:** \n   - \"Core Goal: Achieve **{target_rank}** for [User Name].\"\n   - \"Secondary Goal: Achieve the **{target_rank}** Car Bonus.\"\n\n"
+                f"1. **State the Goal:** \n   - \"Core Goal: Achieve **{current_target_rank}** for [User Name].\"\n   - \"Secondary Goal: Achieve the **{current_target_rank}** Car Bonus.\"\n\n"
                 "2. **User PQV Analysis:**\n   - Current Total PQV: [X] (from Group Volume Details)\n   - Required PQV: [Y] (based on target rank)\n   - Deficit/Surplus: [Z] PQV needed/available\n\n"
             )
             
             # Part 6: Analysis with target rank continued
             analysis_part2 = (
-                f"3. **Frontline Legs Analysis:**\n   - List all Frontline DISTRIBUTORS with their current status:\n     - [Distributor Name]: [PQV] PV | [Qualified Leg Status] | [Action Items]\n   - Summary: \"The user currently has [Y] of [X] required Qualified Legs for **{target_rank}**.\"\n\n"
+                f"3. **Frontline Legs Analysis:**\n   - List all Frontline DISTRIBUTORS with their current status:\n     - [Distributor Name]: [PQV] PV | [Qualified Leg Status] | [Action Items]\n   - Summary: \"The user currently has [Y] of [X] required Qualified Legs for **{current_target_rank}**.\"\n\n"
                 f"4. **Car Bonus Legs Analysis (if applicable):**\n   - List all Personally Enrolled Distributors with 100+ PQV\n   - Note: These are in addition to the distributors required for rank qualification\n   - Summary: \"The user currently has [A] of 3 required Car Bonus Legs (personally enrolled distributors with 100+ PQV, in addition to rank requirements).\"\n\n"
             )
             
@@ -499,7 +504,7 @@ if generate_button:
                 f"{action_plan}"
                 f"{timeline}"
                 f"{recommendations}\n\n"
-                f"Now, analyze the following data for the user targeting {target_rank}:\n\n"
+                f"Now, analyze the following data for the user targeting {current_target_rank}:\n\n"
                 f"--- START OF Group Volume Details CSV (First 5 rows) ---\n{gvd_df.head().to_string()}\n...\n--- END OF Group Volume Details CSV ---\n\n"
                 f"--- START OF Advanced Genealogy Report CSV (First 5 rows) ---\n{agr_df.head().to_string()}\n...\n--- END OF Advanced Genealogy Report CSV ---"
             )
@@ -509,7 +514,7 @@ if generate_button:
             st.session_state.raw_data = {
                 'gvd': gvd_data,
                 'agr': agr_data,
-                'target_rank': target_rank
+                'target_rank': current_target_rank
             }
             
             # Clear previous chat messages when generating a new plan

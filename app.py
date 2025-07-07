@@ -27,7 +27,7 @@ You are an expert business analyst for a network marketing company called Younge
 
 ### YOUR TASK:
 
-1.  **Analyze the User's Current State:** Based on the two provided CSV files, determine the user's current status for their Target Rank. Identify their Personal PQV, GQV-3CL, and the status of each of their frontline legs.
+1.  **Analyze the User's Current State:** Based on the two provided CSV files, determine the user's current status for their Target Rank.
 
 2.  **Identify Gaps:** Clearly state what the user is missing.
 
@@ -78,8 +78,8 @@ if generate_button:
         try:
             genai.configure(api_key=api_key)
             
-            # THIS IS THE CORRECTED LINE:
-            model = genai.GenerativeModel('gemini-1.0-pro') 
+            # ** FINAL CORRECTED MODEL NAME **
+            model = genai.GenerativeModel('gemini-1.5-flash-latest') 
 
             gvd_df = pd.read_csv(uploaded_gvd)
             agr_df = pd.read_csv(uploaded_agr)
@@ -100,9 +100,8 @@ if generate_button:
         except Exception as e:
             error_message = (
                 "### An Error Occurred\n\n"
-                "The analysis could not be completed. The most common error is an **invalid API Key** or an **outdated model name**.\n\n"
-                "Please check the following:\n\n"
-                "1.  **Is your API Key correct?**\n"
+                "The analysis could not be completed. Please check the following:\n\n"
+                "1.  **Is your API Key correct?** Invalid keys are the most common issue.\n"
                 "2.  **Have you enabled the 'Generative Language API' in your Google Cloud project?**\n\n"
                 f"**Error Details:**\n```\n{str(e)}\n```"
             )

@@ -159,17 +159,17 @@ Before you do anything, you MUST consult this knowledge base. The rules and defi
 4. **Volume Pull-Up:** Move volume from frontline members to user if needed
 
 ### RANK REQUIREMENTS (CRITICAL - MUST FOLLOW EXACTLY)
-* **1 Star Executive (1SE):** 250 PQV + 3 Qualified Legs
-* **2 Star Executive (2SE):** 500 PQV + 5 Qualified Legs
-* **3 Star Executive (3SE):** 1,000 PQV + 8 Qualified Legs
-* **4 Star Executive (4SE):** 2,500 PQV + 12 Qualified Legs
-* **5 Star Executive (5SE):** 5,000 PQV + 20 Qualified Legs
+* **1 Star Executive (1SE):** 250 PQV + 3 Qualified Legs + 5,400 total Group Volume
+* **2 Star Executive (2SE):** 300 PQV + 3 Individual 1 Star Legs + 7,500 total Group Volume
+* **3 Star Executive (3SE):** 300 PQV + 5 Individual 1 Star Legs + 10,500 total Group Volume
+* **4 Star Executive (4SE):** 300 PQV + 6 Individual 1 Star Legs + 27,000 total Group Volume
+* **5 Star Executive (5SE):** 300 PQV + 9 Individual 1 Star Legs + 43,200 total Group Volume
 
 *QUALIFIED LEG REQUIREMENTS (MUST MEET ALL):*
 - Must be a Frontline Distributor (not PCUST)
 - Minimum 150 PQV
 - Must have 3 downline members with 50+ PQV each
-- Volume must be from qualified sales (no self-purchases)
+- Volume is found from the uploaded Group Volume csv file
 
 *CAR BONUS QUALIFICATIONS (1SE+):*
 - 3 personally enrolled distributors with 100+ PQV each

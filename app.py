@@ -485,9 +485,9 @@ with side_col:
     st.markdown("---")
     st.subheader("📚 Help & Resources")
     with st.container(border=True):
-        st.page_link("https://www.youngevity.com", label="🌐 Youngevity Official Site", icon="")
-        st.page_link("https://aistudio.google.com", label="🔑 Get API Key", icon="")
-        st.page_link("https://youngevity.com/compensation-plan/", label="📈 View Full Compensation Plan", icon="")
+        st.page_link("https://www.youngevity.com", label="🌐 Youngevity Official Site")
+        st.page_link("https://aistudio.google.com", label="🔑 Get API Key")
+        st.page_link("https://youngevity.com/compensation-plan/", label="📈 View Full Compensation Plan")
 
 # --- Interactive Follow-up Chat ---
 st.markdown("---")

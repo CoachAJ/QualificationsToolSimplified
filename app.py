@@ -119,8 +119,8 @@ def build_prompt(target_rank_value, gvd_dataframe, agr_dataframe):
         f"{timeline}"
         f"{recommendations}\n\n"
         f"Now, analyze the following data for the user targeting {target_rank_value}:\n\n"
-        f"--- START OF Group Volume Details CSV (First 5 rows) ---\n{gvd_dataframe.head().to_string()}\n...\n--- END OF Group Volume Details CSV ---\n\n"
-        f"--- START OF Advanced Genealogy Report CSV (First 5 rows) ---\n{agr_dataframe.head().to_string()}\n...\n--- END OF Advanced Genealogy Report CSV ---"
+        f"--- START OF Group Volume Details CSV ---\n{gvd_dataframe.to_string()}\n--- END OF Group Volume Details CSV ---\n\n"
+        f"--- START OF Advanced Genealogy Report CSV ---\n{agr_dataframe.to_string()}\n--- END OF Advanced Genealogy Report CSV ---"
     )
     
     return full_prompt

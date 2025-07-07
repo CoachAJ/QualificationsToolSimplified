@@ -66,7 +66,6 @@ VOLUME TYPES & HANDLING:
     - Level 0: Sheet owner
     - Level 1: Direct enrollments (one level below)
     - Level 2: Two levels below, and so on
-  * PCUST volume only counts if not from autoship orders
 
 BUSINESS BUILDING TERMS:
 - Frontline: Direct referrals in your first level
@@ -169,7 +168,7 @@ Before you do anything, you MUST consult this knowledge base. The rules and defi
 4. **VOLUME SOURCE:** All volume data comes from the 'Volume' column in 'Group Volume Details.csv'.
 
 ### BUSINESS RESOURCES
-1. **Volume Bank:** Non-autoship orders from frontline PCUSTs
+1. **Volume Bank:** Non-autoship orders from frontline PCUSTs or Distributor volume over and above the required threshold found in additional orders in the same period
 2. **Movable Accounts:** PCUST accounts enrolled within last 60 days
 3. **User's Surplus Volume:** User's excess volume above rank requirements
 4. **Volume Pull-Up:** Move volume from frontline members to user if needed

@@ -419,11 +419,8 @@ if generate_button:
             
             # Store the initial prompt and raw data for the chat session
             st.session_state.full_initial_prompt = full_prompt
-            st.session_state.raw_data = {
-                'gvd': gvd_data,
-                'agr': agr_data,
-                'target_rank': st.session_state.target_rank
-            }
+            # Store the summary for context in follow-up chat
+            st.session_state.data_summary = data_summary
             
             # Clear previous chat messages when generating a new plan
             if "messages" in st.session_state:
@@ -584,9 +581,33 @@ if prompt := st.chat_input("Ask a follow-up question about your rank advancement
                         "Base your answer on the previously analyzed data and the rank advancement plan you generated."
                     )
                     
+                    # Create a string representation of the data summary for the prompt
+                    data_summary = st.session_state.get("data_summary", {})
+                    summary_str = "\n".join([f"- {key}: {value}" for key, value in data_summary.items()])
+                    
+                    # Construct a new prompt that includes all necessary context
+                    initial_plan = st.session_state.get("api_response", "")
+                    follow_up_prompt = f"""
+**CONTEXT: Original Analysis**
+Here was the original plan you provided:
+---
+{initial_plan}
+---
+
+**CONTEXT: Original Data Summary**
+Here is the data summary that was used for the analysis:
+---
+{summary_str}
+---
+
+**New Question:**
+Based on all the context above, please answer the following question:
+
+{prompt}
+"""
+
                     # Send the message with context
-                    complete_prompt = f"{context}\n\nUser's question: {prompt}"
-                    response = chat.send_message(complete_prompt)
+                    response = chat.send_message(follow_up_prompt)
                     
                     # Process and display the response
                     if response.text:

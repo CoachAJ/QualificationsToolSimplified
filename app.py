@@ -20,11 +20,11 @@ GLOBAL RESIDUAL COMPENSATION PLAN
    - Luxury Trips: All-expense paid vacations
 
 2. RANK ADVANCEMENT REQUIREMENTS:
-   - 1 Star Executive (1SE): 250 PQV + 3 Qualified Legs
-   - 2 Star Executive (2SE): 500 PQV + 5 Qualified Legs
-   - 3 Star Executive (3SE): 1,000 PQV + 8 Qualified Legs
-   - 4 Star Executive (4SE): 2,500 PQV + 12 Qualified Legs
-   - 5 Star Executive (5SE): 5,000 PQV + 20 Qualified Legs
+   - **1 Star Executive (1SE):** 250 PQV + 3 Qualified Legs + 5,400 total Group Volume
+   - **2 Star Executive (2SE):** 300 PQV + 3 Individual 1 Star Legs + 7,500 total Group Volume
+   - **3 Star Executive (3SE):** 300 PQV + 5 Individual 1 Star Legs + 10,500 total Group Volume
+   - **4 Star Executive (4SE):** 300 PQV + 6 Individual 1 Star Legs + 27,000 total Group Volume
+   - **5 Star Executive (5SE):** 300 PQV + 9 Individual 1 Star Legs + 43,200 total Group Volume
 
 3. QUALIFIED LEG REQUIREMENTS:
    - Must be a Frontline Distributor (not PCUST)
@@ -42,15 +42,31 @@ GLOBAL RESIDUAL COMPENSATION PLAN
 GLOSSARY_TEXT = """
 MEMBERSHIP AFFILIATION TYPES:
 - Retail Customer: Purchases at retail prices, not enrolled in compensation plan
-- Preferred Customer (PCUST): Enjoys wholesale pricing (20-30% off), not a business builder
+- Preferred Customer (PCUST): 
+  * Enjoys wholesale pricing (20-30% off), not a business builder
+  * Not considered distributors or leg builders
+  * Cannot be counted as qualified legs for rank advancement
+  * Identified by 'PCUST' in the Title column of the Advanced Genealogy Report
+  * All PCUST volume counts towards group volume
+  * PCUSTs on level 1 (direct enrollments) within last 60 days can be moved to other distributors
+  * When moved, only their non-autoship volume for that calendar month moves with them
+  * Volume from autoship orders (as indicated in Group Volume Details CSV) cannot be moved
 - Distributor (DIST): Can build a business and earn commissions, $49.95 enrollment
 - 1-5 Star Executive: Achieved rank status with increasing benefits and bonuses
 
-VOLUME TYPES:
+VOLUME TYPES & HANDLING:
 - PQV (Personal Qualifying Volume): Counts toward rank advancement, 1:1 with BV
 - GQV (Group Qualifying Volume): Team volume that counts toward rank requirements
 - BV (Bonus Volume): Used to calculate commission payouts, 1:1 with PQV
 - OV (Organization Volume): Total volume in your entire organization
+- Volume Calculation Rules:
+  * Only volume from the Group Volume Details CSV is considered valid
+  * Volume is associated with accounts using the ID# from the Group Volume Details CSV
+  * Organization levels are determined by the Advanced Genealogy Report:
+    - Level 0: Sheet owner
+    - Level 1: Direct enrollments (one level below)
+    - Level 2: Two levels below, and so on
+  * PCUST volume only counts if not from autoship orders
 
 BUSINESS BUILDING TERMS:
 - Frontline: Direct referrals in your first level

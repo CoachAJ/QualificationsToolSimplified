@@ -3,127 +3,136 @@ import google.generativeai as genai
 import pandas as pd
 
 # --- Helper function to build prompt consistently ---
-def build_prompt(target_rank_value, gvd_dataframe, agr_dataframe):
-    """Build a complete prompt for the AI model using consistent target rank references.
-    
-    Args:
-        target_rank_value (str): The selected target rank from session state
-        gvd_dataframe (DataFrame): The Group Volume Details dataframe
-        agr_dataframe (DataFrame): The Advanced Genealogy Report dataframe
-        
-    Returns:
-        str: The complete prompt ready for AI processing
+def preprocess_data(gvd_df, agr_df):
     """
-    # Part 1: Knowledge base
-    knowledge_base = f"{COMPENSATION_PLAN_TEXT}\n\n{GLOSSARY_TEXT}\n\n{POLICIES_TEXT}"
-    
-    # Part 2: Core definitions
-    core_definitions = (
-        "### CORE DEFINITIONS & UNBREAKABLE RULES\n"
-        "1. **DATA UNIFICATION RULE (CRITICAL FIRST STEP):** Before any analysis, you MUST mentally join the two data sources. The 'ID#' column in 'AdvancedGenealogyReport.csv' corresponds to the 'Associate #' column in 'Group Volume Details.csv'.\n\n"
-        "2. **DISTRIBUTOR CLASSIFICATION:** After unifying the data, classify each person:\n   - If 'Title' is 'PCUST' → CUSTOMER (cannot be a leg)\n   - If 'Title' is anything else (SAA, SRA, 1SE, BRA, DIST, etc.) → DISTRIBUTOR (can be a leg)\n\n"
-        "3. **PRINCIPLE OF MINIMUM SUFFICIENT ACTION:** Use the smallest amount of resources necessary to meet requirements. Once a distributor or leg is qualified, STOP allocating resources to them.\n\n"
-        "4. **VOLUME SOURCE:** All volume data comes from the 'Volume' column in 'Group Volume Details.csv'.\n\n"
-    )
-    
-    # Part 3: Business resources
-    business_resources = (
-        "### BUSINESS RESOURCES\n"
-        "1. **Volume Bank:** Non-autoship orders from frontline PCUSTs or Distributor volume over and above the required threshold found in additional orders in the same period\n"
-        "2. **Movable Accounts:** PCUST accounts enrolled within last 60 days\n"
-        "3. **User's Surplus Volume:** User's excess volume above rank requirements\n"
-        "4. **Volume Pull-Up:** Move volume from frontline members to user if needed\n\n"
-    )
-    
-    # Part 4: Rank requirements
-    rank_requirements = (
-        "### RANK REQUIREMENTS (CRITICAL - MUST FOLLOW EXACTLY)\n"
-        "* **1 Star Executive (1SE):** 250 PQV + 3 Qualified Legs + 5,400 total Group Volume\n"
-        "* **2 Star Executive (2SE):** 300 PQV + 3 Individual 1 Star Legs + 7,500 total Group Volume\n"
-        "* **3 Star Executive (3SE):** 300 PQV + 5 Individual 1 Star Legs + 10,500 total Group Volume\n"
-        "* **4 Star Executive (4SE):** 300 PQV + 6 Individual 1 Star Legs + 27,000 total Group Volume\n"
-        "* **5 Star Executive (5SE):** 300 PQV + 9 Individual 1 Star Legs + 43,200 total Group Volume\n\n"
-        "*QUALIFIED LEG REQUIREMENTS (MUST MEET ALL):*\n"
-        "- Must be a Frontline Distributor (not PCUST)\n"
-        "- Minimum 150 PQV\n"
-        "- Must have 3 downline members with 50+ PQV each\n"
-        "- Volume is found from the uploaded Group Volume csv file\n\n"
-        "*CAR BONUS QUALIFICATIONS (1SE+):*\n"
-        "- 3 personally enrolled distributors with 100+ PQV each\n"
-        "- Must maintain 250 PQV personal volume\n"
-        "- $5,400 in group volume required\n"
-        "- Qualify for 3 consecutive months\n\n"
-    )
-    
-    # Part 5: Analysis section with target rank
-    analysis_part1 = (
-        "---\n"
-        "### MULTI-STEP ANALYSIS & JUSTIFICATION\n\n"
-        "**OUTPUT STEP 1: INITIAL ASSESSMENT & GAP ANALYSIS**\n"
-        f"1. **State the Goal:** \n   - \"Core Goal: Achieve **{target_rank_value}** for [User Name].\"\n   - \"Secondary Goal: Achieve the **{target_rank_value}** Car Bonus.\"\n\n"
-        "2. **User PQV Analysis:**\n   - Current Total PQV: [X] (from Group Volume Details)\n   - Required PQV: [Y] (based on target rank)\n   - Deficit/Surplus: [Z] PQV needed/available\n\n"
-    )
-    
-    # Part 6: Analysis with target rank continued
-    analysis_part2 = (
-        f"3. **Frontline Legs Analysis:**\n   - List all Frontline DISTRIBUTORS with their current status:\n     - [Distributor Name]: [PQV] PV | [Qualified Leg Status] | [Action Items]\n   - Summary: \"The user currently has [Y] of [X] required Qualified Legs for **{target_rank_value}**.\"\n\n"
-        f"4. **Car Bonus Legs Analysis (if applicable):**\n   - List all Personally Enrolled Distributors with 100+ PQV\n   - Note: These are in addition to the distributors required for rank qualification\n   - Summary: \"The user currently has [A] of 3 required Car Bonus Legs (personally enrolled distributors with 100+ PQV, in addition to rank requirements).\"\n\n"
-    )
-    
-    # Part 7: Gap analysis and resource inventory
-    gap_analysis = (
-        "5. **Gap Analysis Summary:**\n   - PQV Needed: [X] more to reach target\n   - Qualified Legs Needed: [Y] more\n   - Car Bonus Legs Needed: [Z] more (if applicable)\n\n"
-        "**OUTPUT STEP 2: RESOURCE INVENTORY**\n"
-        "1. **Volume Bank:** [X] PV available from non-autoship PCUST orders\n"
-        "2. **Movable Accounts:** [Y] PCUSTs enrolled in last 60 days\n"
-        "3. **Surplus Volume:** [Z] PV available from user's excess\n"
-        "4. **Volume Pull-Up Potential:** [A] PV available from frontline members\n\n"
-    )
-    
-    # Part 8: Action plan
-    action_plan = (
-        "**OUTPUT STEP 3: PRIORITIZED ACTION PLAN**\n"
-        "1. **PQV Optimization (If Needed):**\n   - Move [X] PV from Volume Bank\n   - Activate [Y] Movable Accounts for [Z] PV\n   - Pull up [A] PV from frontline members\n\n"
-        "2. **Leg Construction Plan:**\n   For each leg needed (in order of priority):\n   - **Target Leg #[N]:** [Distributor Name]\n   - **Current Status:** [PQV] PV | [Sub-legs] with 50+ PV\n   - **Action Plan:**\n     1. [Specific action 1]\n     2. [Specific action 2]\n     3. [Specific action 3]\n   - **Resources Needed:** [List resources required]\n   - **Expected Outcome:** [Expected PV/leg status after actions]\n\n"
-        "3. **Car Bonus Leg Development (If Applicable):**\n   - [Specific actions to develop/activate Car Bonus legs]\n   - [Timeline and milestones]\n\n"
-    )
-    
-    # Part 9: Timeline and recommendations
-    timeline = (
-        "**OUTPUT STEP 4: TIMELINE & MILESTONES**\n"
-        "1. **Immediate (0-30 days):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
-        "2. **Short-term (1-3 months):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
-        "3. **Medium-term (3-6 months):**\n   - [Action item 1]\n   - [Action item 2]\n\n"
-    )
-    
-    # Part 10: Final recommendations
-    recommendations = (
-        "**OUTPUT STEP 5: FINAL RECOMMENDATIONS**\n"
-        "1. **Key Strategies:**\n   - [Strategy 1]\n   - [Strategy 2]\n   - [Strategy 3]\n\n"
-        "2. **Risk Assessment:**\n   - [Potential risk 1] - [Mitigation strategy]\n   - [Potential risk 2] - [Mitigation strategy]\n\n"
-        "3. **Success Metrics:**\n   - [Metric 1]: [Target] by [Date]\n   - [Metric 2]: [Target] by [Date]\n\n"
-        "4. **Next Steps:**\n   - [Immediate next step 1]\n   - [Immediate next step 2]\n   - [Immediate next step 3]\n\n"
-        "**IMPORTANT NOTES:**\n- All recommendations must comply with Youngevity's Policies & Procedures\n- Always prioritize ethical business practices\n- Focus on sustainable growth, not just short-term gains\n- Consider distributor development and team building\n- Factor in training and support requirements"
-    )
-    
-    # Assemble the full prompt
-    full_prompt = (
-        f"{knowledge_base}\n\n"
-        f"{core_definitions}"
-        f"{business_resources}"
-        f"{rank_requirements}"
-        f"{analysis_part1}"
-        f"{analysis_part2}"
-        f"{gap_analysis}"
-        f"{action_plan}"
-        f"{timeline}"
-        f"{recommendations}\n\n"
-        f"Now, analyze the following data for the user targeting {target_rank_value}:\n\n"
-        f"--- START OF Group Volume Details CSV ---\n{gvd_dataframe.to_string()}\n--- END OF Group Volume Details CSV ---\n\n"
-        f"--- START OF Advanced Genealogy Report CSV ---\n{agr_dataframe.to_string()}\n--- END OF Advanced Genealogy Report CSV ---"
-    )
-    
-    return full_prompt
+    Pre-processes and summarizes the genealogy and volume data to create a concise
+    summary for the AI, avoiding token limits.
+
+    Args:
+        gvd_df (DataFrame): Group Volume Details dataframe, with 'PQV' pre-calculated.
+        agr_df (DataFrame): Advanced Genealogy Report dataframe.
+
+    Returns:
+        dict: A summary dictionary containing key stats for the prompt, or None on error.
+    """
+    try:
+        # Ensure required columns are of the correct type
+        agr_df['Level'] = pd.to_numeric(agr_df['Level'], errors='coerce')
+        agr_df['ID#'] = agr_df['ID#'].astype(str)
+        gvd_df['Associate #'] = gvd_df['Associate #'].astype(str)
+        if 'Enroller ID' in agr_df.columns:
+            agr_df['Enroller ID'] = agr_df['Enroller ID'].astype(str)
+
+        # Merge the two dataframes
+        merged_df = pd.merge(agr_df, gvd_df[['Associate #', 'PQV', 'Volume']], left_on='ID#', right_on='Associate #', how='left')
+        merged_df['PQV'] = merged_df['PQV'].fillna(0)
+        merged_df['Volume'] = merged_df['Volume'].fillna(0)
+
+        # Identify the user (Level 0)
+        user_row = merged_df[merged_df['Level'] == 0]
+        if user_row.empty:
+            st.error("❌ Could not identify the user (Level 0) in the Advanced Genealogy Report.")
+            return None
+        user_row = user_row.iloc[0]
+        user_id = user_row['ID#']
+        user_name = user_row['Name']
+        user_pqv = user_row['PQV']
+
+        # Calculate total group volume
+        total_gv = merged_df['Volume'].sum()
+
+        # Identify frontline distributors (Level 1 and not PCUST)
+        frontline_df = merged_df[(merged_df['Level'] == 1) & (merged_df['Title'] != 'PCUST')]
+
+        frontline_summary = []
+        for _, distributor in frontline_df.iterrows():
+            dist_id = distributor['ID#']
+            
+            # Find this distributor's direct downline (enrolled by them)
+            downline_df = merged_df[merged_df['Enroller ID'] == dist_id]
+            
+            # Count downline members with 50+ PQV
+            downline_50pqv_count = downline_df[downline_df['PQV'] >= 50].shape[0]
+
+            frontline_summary.append({
+                "name": distributor['Name'],
+                "id": dist_id,
+                "pqv": distributor['PQV'],
+                "downline_50pqv_count": downline_50pqv_count
+            })
+
+        summary = {
+            "user_name": user_name,
+            "user_id": user_id,
+            "user_pqv": user_pqv,
+            "total_gv": total_gv,
+            "frontline": frontline_summary
+        }
+        return summary
+    except Exception as e:
+        st.error(f"❌ An error occurred during data pre-processing: {e}")
+        return None
+
+def build_prompt(target_rank_value, data_summary):
+    """Build a complete prompt using the pre-processed data summary.
+
+    Args:
+        target_rank_value (str): The selected target rank.
+        data_summary (dict): The dictionary containing summarized data.
+
+    Returns:
+        str: The complete prompt for the AI.
+    """
+    # Create a string representation of the frontline summary
+    frontline_str = "\n".join([
+        f"  - Name: {f['name']}, ID: {f['id']}, PQV: {f['pqv']:.2f}, Downline (50+ PQV): {f['downline_50pqv_count']}"
+        for f in data_summary['frontline']
+    ])
+
+    # The main prompt structure that now takes the summary
+    prompt = f"""
+# TASK: Analyze the following business summary and create a strategic plan to help the user achieve the '{target_rank_value}' rank.
+
+# 1. BUSINESS OVERVIEW
+- **User Name:** {data_summary['user_name']}
+- **User ID:** {data_summary['user_id']}
+- **Current Personal Qualifying Volume (PQV):** {data_summary['user_pqv']:.2f}
+- **Total Group Volume (GV):** {data_summary['total_gv']:.2f}
+
+# 2. FRONTLINE TEAM SUMMARY
+{frontline_str}
+
+# 3. REFERENCE: YOUNGEVITY COMPENSATION PLAN & RULES
+{COMPENSATION_PLAN_TEXT}
+
+{GLOSSARY_TEXT}
+
+{POLICIES_TEXT}
+
+# 4. YOUR ANALYSIS & ACTION PLAN
+Based on the business overview and the official rules, provide a detailed, multi-step action plan. The plan must be structured exactly as follows:
+
+**OUTPUT STEP 1: INITIAL ASSESSMENT & GAP ANALYSIS**
+1.  **State the Goal:** Clearly state the core goal (achieving {target_rank_value}) and the secondary goal (car bonus).
+2.  **User PQV Analysis:** Compare the user's current PQV to the required PQV for {target_rank_value}. State the deficit or surplus.
+3.  **Group Volume Analysis:** Compare the user's current Group Volume to the required GV for {target_rank_value}.
+4.  **Frontline Legs Analysis:** Analyze the frontline summary provided. Determine how many distributors currently meet the 'Qualified Leg' requirements for {target_rank_value}. State how many are qualified and how many more are needed.
+5.  **Gap Analysis Summary:** Summarize the key gaps in PQV, GV, and Qualified Legs.
+
+**OUTPUT STEP 2: PRIORITIZED ACTION PLAN**
+Provide a numbered list of the most critical actions the user should take. For each action, explain *why* it's important and what the *expected outcome* is. Focus on the most efficient path to the goal.
+
+   *Example Action:*
+   1.  **Develop [Distributor Name] into a Qualified Leg:** This is the top priority as they are closest to qualifying. 
+       - *Action:* Help them sign up one more person with 50 PQV.
+       - *Expected Outcome:* This will complete one of the three required legs.
+
+**OUTPUT STEP 3: FINAL RECOMMENDATIONS**
+1.  **Key Strategies:** Provide 2-3 high-level strategic recommendations for long-term, sustainable growth.
+2.  **Risk Assessment:** Identify 1-2 potential risks (e.g., a key leg falling out of qualification) and suggest mitigation strategies.
+3.  **Next Steps:** List the three most immediate, concrete actions the user should take in the next 72 hours.
+"""
+    return prompt
 
 # ==============================================================================
 # --- KNOWLEDGE BASE: REFERENCE DOCUMENT TEXT ---
@@ -356,54 +365,57 @@ if generate_button:
             try:
                 gvd_df = pd.read_csv(uploaded_gvd)
                 agr_df = pd.read_csv(uploaded_agr)
+
+                # --- Start Validation ---
+                required_gvd_cols = {'Associate #', 'Volume'}
+                required_agr_cols = {'ID#', 'Title', 'Name', 'Level'}
                 
-                # Check for required columns in Group Volume Details
-                required_gvd_columns = ['Associate #', 'Volume']
-                missing_gvd = [col for col in required_gvd_columns if col not in gvd_df.columns]
-                
-                # Check for required columns in Advanced Genealogy Report
-                # Handle both 'Enroller ID' and 'Enroller' column names
-                required_agr_columns = ['ID#', 'Title']
+                missing_gvd = list(required_gvd_cols - set(gvd_df.columns))
+                missing_agr = list(required_agr_cols - set(agr_df.columns))
+
+                # Handle flexible 'Enroller' column
                 enroller_col = None
                 if 'Enroller ID' in agr_df.columns:
                     enroller_col = 'Enroller ID'
                 elif 'Enroller' in agr_df.columns:
                     enroller_col = 'Enroller'
-                else:
-                    required_agr_columns.append('Enroller ID or Enroller')
                 
-                missing_agr = [col for col in required_agr_columns if col not in agr_df.columns]
-                
-                # Display error if required columns are missing
+                if not enroller_col:
+                    missing_agr.append('Enroller ID or Enroller')
+
                 if missing_gvd or missing_agr:
-                    error_msg = "❌ Error: Missing required columns in "
+                    error_msg = "❌ Error: Missing required columns. "
                     if missing_gvd:
-                        error_msg += f"Group Volume Details: {', '.join(missing_gvd)}. "
+                        error_msg += f"In Group Volume Details, missing: **{', '.join(missing_gvd)}**. "
                     if missing_agr:
-                        error_msg += f"Advanced Genealogy Report: {', '.join(missing_agr)}. "
-                    error_msg += "Please check your CSV files and try again."
-                    st.error(error_msg)
+                        error_msg += f"In Advanced Genealogy Report, missing: **{', '.join(missing_agr)}**. "
+                    st.error(error_msg + "Please check your files.")
                     st.stop()
-                
-                # Calculate PQV by summing Volume for each Associate Number
+                # --- End Validation ---
+
+                # Standardize Enroller column before processing
+                if enroller_col == 'Enroller':
+                    agr_df.rename(columns={'Enroller': 'Enroller ID'}, inplace=True)
+
+                # Calculate PQV
                 st.info("📊 Processing data: Calculating PQV from Volume data by Associate Number...")
-                gvd_df['PQV'] = gvd_df.groupby('Associate #')['Volume'].transform('sum')
-                
-                # Standardize the Enroller column name
-                if enroller_col and enroller_col != 'Enroller ID':
-                    agr_df['Enroller ID'] = agr_df[enroller_col]
-                    
+                gvd_df['PQV'] = gvd_df.groupby('Associate #')['Volume'].transform('sum').round(2)
                 st.success("✅ CSV files validated and processed successfully!")
-                
-                gvd_data = gvd_df.to_csv(index=False)
-                agr_data = agr_df.to_csv(index=False)
-                
+
+                # Pre-process data to create a compact summary
+                st.info("📝 Summarizing data for AI analysis...")
+                data_summary = preprocess_data(gvd_df, agr_df)
+                if data_summary is None:
+                    st.error("❌ Data summary failed. Cannot proceed with analysis.")
+                    st.stop()
+                st.success("✅ Data summarized successfully!")
+
             except Exception as e:
-                st.error(f"❌ Error reading CSV files: {str(e)}. Please check the file format and try again.")
+                st.error(f"❌ Error reading or processing CSV files: {e}")
                 st.stop()
 
-            # Use the build_prompt function for consistent prompt construction
-            full_prompt = build_prompt(st.session_state.target_rank, gvd_df, agr_df)
+            # Build the prompt using the new summary
+            full_prompt = build_prompt(st.session_state.target_rank, data_summary)
             
             # Store the initial prompt and raw data for the chat session
             st.session_state.full_initial_prompt = full_prompt

@@ -51,14 +51,13 @@ An AI-powered tool to help Youngevity distributors analyze their business and cr
 ### Group Volume Details CSV
 Should contain at least these columns:
 - `Associate #`
-- `PQV`
-- `Volume`
+- `Volume` (PQV will be automatically calculated by summing volumes for each Associate Number)
 
 ### Advanced Genealogy Report CSV
 Should contain at least these columns:
 - `ID#`
 - `Title`
-- `Enroller ID`
+- `Enroller ID` (or `Enroller` - both column names are supported)
 
 ## Troubleshooting
 

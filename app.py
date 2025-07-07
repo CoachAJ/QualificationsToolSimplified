@@ -6,7 +6,8 @@ import pandas as pd
 def preprocess_data(gvd_df, agr_df):
     """
     Pre-processes and summarizes the genealogy and volume data to create a concise
-    summary for the AI, avoiding token limits.
+    summary for the AI, avoiding token limits. This version includes robust cleaning
+    and corrected logic.
 
     Args:
         gvd_df (DataFrame): Group Volume Details dataframe, with 'PQV' pre-calculated.
@@ -16,30 +17,49 @@ def preprocess_data(gvd_df, agr_df):
         dict: A summary dictionary containing key stats for the prompt, or None on error.
     """
     try:
-        # Ensure required columns are of the correct type
-        agr_df['Level'] = pd.to_numeric(agr_df['Level'], errors='coerce')
-        agr_df['ID#'] = agr_df['ID#'].astype(str)
-        gvd_df['Associate #'] = gvd_df['Associate #'].astype(str)
+        # --- Data Cleaning & Preparation ---
+        st.info("🧹 Cleaning and preparing data for merge...")
+        # Ensure ID columns are clean strings for reliable merging
+        agr_df['ID#'] = agr_df['ID#'].astype(str).str.strip()
         if 'Enroller ID' in agr_df.columns:
-            agr_df['Enroller ID'] = agr_df['Enroller ID'].astype(str)
+            agr_df['Enroller ID'] = agr_df['Enroller ID'].astype(str).str.strip()
+        gvd_df['Associate #'] = gvd_df['Associate #'].astype(str).str.strip()
+        
+        # Ensure Level is numeric
+        agr_df['Level'] = pd.to_numeric(agr_df['Level'], errors='coerce')
 
-        # Merge the two dataframes
-        merged_df = pd.merge(agr_df, gvd_df[['Associate #', 'PQV', 'Volume']], left_on='ID#', right_on='Associate #', how='left')
+        # --- Merging ---
+        # The gvd_df passed in already has PQV calculated via transform.
+        # To avoid issues with duplicate rows from the merge, we'll merge only
+        # the PQV column and drop duplicates from gvd_df before merging.
+        volume_data_for_merge = gvd_df[['Associate #', 'PQV']].drop_duplicates()
+        
+        merged_df = pd.merge(
+            agr_df,
+            volume_data_for_merge,
+            left_on='ID#',
+            right_on='Associate #',
+            how='left'
+        )
+        # Fill missing values for people in genealogy but not in volume report
         merged_df['PQV'] = merged_df['PQV'].fillna(0)
-        merged_df['Volume'] = merged_df['Volume'].fillna(0)
+        st.success("✅ Data merged successfully.")
 
+        # --- Data Extraction ---
+        st.info("👤 Identifying user and frontline team...")
         # Identify the user (Level 0)
         user_row = merged_df[merged_df['Level'] == 0]
         if user_row.empty:
             st.error("❌ Could not identify the user (Level 0) in the Advanced Genealogy Report.")
             return None
+        
         user_row = user_row.iloc[0]
         user_id = user_row['ID#']
         user_name = user_row['Name']
         user_pqv = user_row['PQV']
 
-        # Calculate total group volume
-        total_gv = merged_df['Volume'].sum()
+        # CORRECTLY Calculate total group volume from the original gvd_df
+        total_gv = gvd_df['Volume'].sum()
 
         # Identify frontline distributors (Level 1 and not PCUST)
         frontline_df = merged_df[(merged_df['Level'] == 1) & (merged_df['Title'] != 'PCUST')]
@@ -49,6 +69,7 @@ def preprocess_data(gvd_df, agr_df):
             dist_id = distributor['ID#']
             
             # Find this distributor's direct downline (enrolled by them)
+            # Use the main merged_df which contains all levels
             downline_df = merged_df[merged_df['Enroller ID'] == dist_id]
             
             # Count downline members with 50+ PQV
@@ -60,6 +81,7 @@ def preprocess_data(gvd_df, agr_df):
                 "pqv": distributor['PQV'],
                 "downline_50pqv_count": downline_50pqv_count
             })
+        st.success("✅ Team structure analyzed.")
 
         summary = {
             "user_name": user_name,
@@ -71,6 +93,8 @@ def preprocess_data(gvd_df, agr_df):
         return summary
     except Exception as e:
         st.error(f"❌ An error occurred during data pre-processing: {e}")
+        # Also log the error for debugging
+        st.exception(e)
         return None
 
 def build_prompt(target_rank_value, data_summary):
